@@ -19,7 +19,8 @@ from api.routers.file_upload import resolve_file_id
 from core.scheduler.job_queue import JobRequest
 from core.scheduler.multiprocess_scheduler import MultiprocessModelScheduler
 from core.utils.file_utils import save_base64_file, save_upload_file
-from core.storage.storage_manager import download_file_from_s3
+from core.storage.storage_manager import R2Client
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/mesh-generation", tags=["mesh_generation"])
@@ -172,7 +173,7 @@ class ImageToRawMeshRequest(BaseModel):
                 "Only one of image_path, image_base64, or image_file_id should be provided"
             )
         return v
-
+    
     model_config = ConfigDict(protected_namespaces=("settings_",))
 
 
@@ -368,9 +369,7 @@ async def process_file_input(
         if file_path:
             # Validate existing file path
             if not Path(file_path).exists():
-                raise HTTPException(
-                    status_code=404, detail=f"{input_type.title()} file not found"
-                )
+               file_path= R2Client._instance.download_from_r2(object_key=file_path, local_file_path=temp_dir)
             return str(file_path)
 
         elif base64_data:
@@ -394,9 +393,9 @@ async def process_file_input(
             # Process uploaded file
             file_info = await save_upload_file(upload_file, temp_dir)
             return str(file_info["file_path"])
-        elif img_url:
-            file_info = await download_file_from_s3(img_url, temp_dir)
-            return str(file_info["file_path"])
+        # elif img_url:
+        #     file_info = await download_file_from_s3(img_url, temp_dir)
+        #     return str(file_info["file_path"])
         else:
             raise HTTPException(status_code=400, detail="No input provided")
 

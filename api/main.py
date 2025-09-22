@@ -15,6 +15,7 @@ from core.scheduler.scheduler_factory import (
     create_development_scheduler,
     create_production_scheduler,
 )
+from core.storage.storage_manager import R2Client 
 from core.utils.exceptions import BaseAPIException
 
 from .routers import (
@@ -25,6 +26,8 @@ from .routers import (
     system,
 )
 
+
+r2_client = R2Client()
 logger = logging.getLogger(__name__)
 
 # Global variables for shared resources
