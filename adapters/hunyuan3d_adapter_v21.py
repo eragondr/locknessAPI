@@ -104,6 +104,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
             # Load shape generation pipeline if needed
             if self.load_shapegen:
+
                 from hy3dshape.pipelines import (
                     Hunyuan3DDiTFlowMatchingPipeline,
                 )
@@ -111,7 +112,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
                 logger.info("Loading shape generation pipeline...")
                 self.pipeline_shapegen = (
-                    Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(self.model_path)
+                    Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(str(self.model_path))
                 )
                 self.pipeline_shapegen.enable_flashvdm()
                 loaded_models["shapegen"] = self.pipeline_shapegen
