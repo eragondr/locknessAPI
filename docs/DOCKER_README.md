@@ -59,13 +59,13 @@ This guide provides instructions for building and deploying the 3DAIGC-API using
 4. **Build and run with Docker Compose**
    ```bash
    # Build the image
-   docker compose build
+   docker-compose build
 
    # Start the service
-   docker compose up -d
+   docker-compose up -d
 
    # View logs
-   docker-compose logs -f locknessapi
+   docker-compose logs -f 3daigc-api
    ```
 
 ### Method 2: Using Docker CLI
@@ -78,7 +78,7 @@ This guide provides instructions for building and deploying the 3DAIGC-API using
 2. **Run the container**
    ```bash
    docker run -d \
-     --name locknessapi \
+     --name 3daigc-api \
      --gpus all \
      -p 8000:8000 \
      -v $(pwd)/data:/app/data \
@@ -88,7 +88,7 @@ This guide provides instructions for building and deploying the 3DAIGC-API using
      -e PYTHONPATH=/app \
      -e CUDA_VISIBLE_DEVICES=0 \
      --restart unless-stopped \
-     locknessapi:latest
+     3daigc-api:latest
    ```
 
 ## Configuration

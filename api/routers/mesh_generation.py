@@ -20,7 +20,7 @@ from core.scheduler.job_queue import JobRequest
 from core.scheduler.multiprocess_scheduler import MultiprocessModelScheduler
 from core.utils.file_utils import save_base64_file, save_upload_file
 from core.storage.storage_manager import R2Client
-
+import os
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/mesh-generation", tags=["mesh_generation"])
@@ -364,12 +364,12 @@ async def process_file_input(
 
     # Create temporary directory for processing
     temp_dir = tempfile.mkdtemp(prefix="mesh_gen_")
-
+    UPLOAD_BASE_DIR = Path("uploads")
     try:
         if file_path:
             # Validate existing file path
             if not Path(file_path).exists():
-               file_path= R2Client._instance.download_from_r2(object_key=file_path, local_file_path=temp_dir)
+                file_path= R2Client._instance.download_from_r2(object_key=file_path)
             return str(file_path)
 
         elif base64_data:

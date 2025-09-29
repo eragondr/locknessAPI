@@ -35,8 +35,7 @@ VERIFY_ONLY=false
 FORCE_DOWNLOAD=false
 
 # Available models
-#AVAILABLE_MODELS=("partfield" "hunyuan2" "hunyuan2mini" "hunyuan21" "trellis" "trellis-text" "holopart" "unirig" "partpacker" "misc" "all")
-AVAILABLE_MODELS=("hunyuan21" "all")
+AVAILABLE_MODELS=("partfield" "hunyuan2" "hunyuan2mini" "hunyuan21" "trellis" "trellis-text" "holopart" "unirig" "partpacker" "misc" "all")
 
 show_help() {
     cat << EOF
@@ -183,75 +182,75 @@ download_with_verify() {
 }
 
 # Function to download PartField model
-# download_partfield() {
-#     print_info "========================================"
-#     print_info "Downloading PartField Model"
-#     print_info "========================================"
+download_partfield() {
+    print_info "========================================"
+    print_info "Downloading PartField Model"
+    print_info "========================================"
     
-#     local model_path="pretrained/PartField/model_objaverse.pt"
+    local model_path="pretrained/PartField/model_objaverse.pt"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_file "$model_path" 50000000; then # 50MB minimum
-#         print_info "PartField model already exists and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_file "$model_path" 50000000; then # 50MB minimum
+        print_info "PartField model already exists and verified"
+        return 0
+    fi
     
-#     mkdir -p pretrained/PartField
-#     download_with_verify \
-#         "https://huggingface.co/mikaelaangel/partfield-ckpt/resolve/main/model_objaverse.ckpt" \
-#         "$model_path" \
-#         "PartField model"
-# }
+    mkdir -p pretrained/PartField
+    download_with_verify \
+        "https://huggingface.co/mikaelaangel/partfield-ckpt/resolve/main/model_objaverse.ckpt" \
+        "$model_path" \
+        "PartField model"
+}
 
-# # Function to download Hunyuan3D 2.0 models
-# download_hunyuan2() {
-#     print_info "========================================"
-#     print_info "Downloading Hunyuan3D 2.0 Models"
-#     print_info "========================================"
+# Function to download Hunyuan3D 2.0 models
+download_hunyuan2() {
+    print_info "========================================"
+    print_info "Downloading Hunyuan3D 2.0 Models"
+    print_info "========================================"
     
-#     local model_dir="pretrained/tencent/Hunyuan3D-2"
+    local model_dir="pretrained/tencent/Hunyuan3D-2"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 10; then
-#         print_info "Hunyuan3D 2.0 models already exist and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 10; then
+        print_info "Hunyuan3D 2.0 models already exist and verified"
+        return 0
+    fi
     
-#     mkdir -p "$model_dir"
-#     print_info "Downloading Hunyuan3D 2.0 (geometry/texture/vae)..."
-#     print_info "Notice that the paint and delight models are ONLY needed when you need to texture generation feature"
-#     if huggingface-cli download  tencent/Hunyuan3D-2 \
-#         --include "hunyuan3d-dit-v2-0-turbo/*" "hunyuan3d-vae-v2-0-turbo/*" "hunyuan3d-paint-v2-0-turbo/*" "hunyuan3d-delight-v2-0/*" \
-#         --local-dir "$model_dir"; then
-#         print_success "Hunyuan3D 2.0 models downloaded successfully"
-#     else
-#         print_error "Failed to download Hunyuan3D 2.0 models"
-#         return 1
-#     fi
-# }
+    mkdir -p "$model_dir"
+    print_info "Downloading Hunyuan3D 2.0 (geometry/texture/vae)..."
+    print_info "Notice that the paint and delight models are ONLY needed when you need to texture generation feature"
+    if huggingface-cli download  tencent/Hunyuan3D-2 \
+        --include "hunyuan3d-dit-v2-0-turbo/*" "hunyuan3d-vae-v2-0-turbo/*" "hunyuan3d-paint-v2-0-turbo/*" "hunyuan3d-delight-v2-0/*" \
+        --local-dir "$model_dir"; then
+        print_success "Hunyuan3D 2.0 models downloaded successfully"
+    else
+        print_error "Failed to download Hunyuan3D 2.0 models"
+        return 1
+    fi
+}
 
-# # Function to download Hunyuan3D 2.0 mini models
-# download_hunyuan2mini() {
-#     print_info "========================================"
-#     print_info "Downloading Hunyuan3D 2.0 Mini Models"
-#     print_info "========================================"
+# Function to download Hunyuan3D 2.0 mini models
+download_hunyuan2mini() {
+    print_info "========================================"
+    print_info "Downloading Hunyuan3D 2.0 Mini Models"
+    print_info "========================================"
     
-#     local model_dir="pretrained/tencent/Hunyuan3D-2mini"
+    local model_dir="pretrained/tencent/Hunyuan3D-2mini"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 5; then
-#         print_info "Hunyuan3D 2.0 mini models already exist and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 5; then
+        print_info "Hunyuan3D 2.0 mini models already exist and verified"
+        return 0
+    fi
     
-#     mkdir -p "$model_dir"
-#     print_info "Downloading Hunyuan3D 2.0 mini (geometry/vae)..."
-#     if huggingface-cli download  tencent/Hunyuan3D-2mini \
-#         --include "hunyuan3d-dit-v2-mini-turbo/*" "hunyuan3d-vae-v2-mini-turbo/*" \
-#         --local-dir "$model_dir"; then
-#         print_success "Hunyuan3D 2.0 mini models downloaded successfully"
-#     else
-#         print_error "Failed to download Hunyuan3D 2.0 mini models"
-#         return 1
-#     fi
-# }
+    mkdir -p "$model_dir"
+    print_info "Downloading Hunyuan3D 2.0 mini (geometry/vae)..."
+    if huggingface-cli download  tencent/Hunyuan3D-2mini \
+        --include "hunyuan3d-dit-v2-mini-turbo/*" "hunyuan3d-vae-v2-mini-turbo/*" \
+        --local-dir "$model_dir"; then
+        print_success "Hunyuan3D 2.0 mini models downloaded successfully"
+    else
+        print_error "Failed to download Hunyuan3D 2.0 mini models"
+        return 1
+    fi
+}
 
 # Function to download Hunyuan3D 2.1 models
 download_hunyuan21() {
@@ -268,7 +267,7 @@ download_hunyuan21() {
     
     mkdir -p "$model_dir"
     print_info "Downloading Hunyuan3D 2.1 models..."
-    if huggingface-cli download  tencent/Hunyuan3D-2.1 --local-dir "$model_dir"; then
+    if huggingface-cli download  tencent/Hunyuan3D-21 --local-dir "$model_dir"; then
         print_success "Hunyuan3D 2.1 models downloaded successfully"
     else
         print_error "Failed to download Hunyuan3D 2.1 models"
@@ -277,119 +276,119 @@ download_hunyuan21() {
 }
 
 # Function to download TRELLIS models
-# download_trellis() {
-#     print_info "========================================"
-#     print_info "Downloading TRELLIS Image-Large Model"
-#     print_info "========================================"
+download_trellis() {
+    print_info "========================================"
+    print_info "Downloading TRELLIS Image-Large Model"
+    print_info "========================================"
     
-#     local model_dir="pretrained/TRELLIS/TRELLIS-image-large"
+    local model_dir="pretrained/TRELLIS/TRELLIS-image-large"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 5; then
-#         print_info "TRELLIS image-large model already exists and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 5; then
+        print_info "TRELLIS image-large model already exists and verified"
+        return 0
+    fi
     
-#     mkdir -p "$model_dir"
-#     print_info "Downloading TRELLIS image-large model..."
-#     if huggingface-cli download  microsoft/TRELLIS-image-large --local-dir "$model_dir"; then
-#         print_success "TRELLIS image-large model downloaded successfully"
-#     else
-#         print_error "Failed to download TRELLIS image-large model"
-#         return 1
-#     fi
-# }
+    mkdir -p "$model_dir"
+    print_info "Downloading TRELLIS image-large model..."
+    if huggingface-cli download  microsoft/TRELLIS-image-large --local-dir "$model_dir"; then
+        print_success "TRELLIS image-large model downloaded successfully"
+    else
+        print_error "Failed to download TRELLIS image-large model"
+        return 1
+    fi
+}
 
-# # Function to download TRELLIS text model (optional)
-# download_trellis_text() {
-#     print_info "========================================"
-#     print_info "Downloading TRELLIS Text-XLarge Model"
-#     print_info "========================================"
+# Function to download TRELLIS text model (optional)
+download_trellis_text() {
+    print_info "========================================"
+    print_info "Downloading TRELLIS Text-XLarge Model"
+    print_info "========================================"
     
-#     local model_dir="pretrained/TRELLIS/TRELLIS-text-xlarge"
+    local model_dir="pretrained/TRELLIS/TRELLIS-text-xlarge"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 5; then
-#         print_info "TRELLIS text-xlarge model already exists and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 5; then
+        print_info "TRELLIS text-xlarge model already exists and verified"
+        return 0
+    fi
     
-#     mkdir -p "$model_dir"
-#     print_info "Downloading TRELLIS text-xlarge model (optional, for text-conditioned part re-texturing)..."
-#     if huggingface-cli download  microsoft/TRELLIS-text-xlarge --local-dir "$model_dir"; then
-#         print_success "TRELLIS text-xlarge model downloaded successfully"
-#     else
-#         print_error "Failed to download TRELLIS text-xlarge model"
-#         return 1
-#     fi
-# }
+    mkdir -p "$model_dir"
+    print_info "Downloading TRELLIS text-xlarge model (optional, for text-conditioned part re-texturing)..."
+    if huggingface-cli download  microsoft/TRELLIS-text-xlarge --local-dir "$model_dir"; then
+        print_success "TRELLIS text-xlarge model downloaded successfully"
+    else
+        print_error "Failed to download TRELLIS text-xlarge model"
+        return 1
+    fi
+}
 
-# # Function to download HoloPart model
-# download_holopart() {
-#     print_info "========================================"
-#     print_info "Downloading HoloPart Model"
-#     print_info "========================================"
+# Function to download HoloPart model
+download_holopart() {
+    print_info "========================================"
+    print_info "Downloading HoloPart Model"
+    print_info "========================================"
     
-#     local model_dir="pretrained/HoloPart"
+    local model_dir="pretrained/HoloPart"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 3; then
-#         print_info "HoloPart model already exists and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 3; then
+        print_info "HoloPart model already exists and verified"
+        return 0
+    fi
     
-#     mkdir -p "$model_dir"
-#     print_info "Downloading HoloPart model..."
-#     if huggingface-cli download  VAST-AI/HoloPart --local-dir "$model_dir"; then
-#         print_success "HoloPart model downloaded successfully"
-#     else
-#         print_error "Failed to download HoloPart model"
-#         return 1
-#     fi
-# }
+    mkdir -p "$model_dir"
+    print_info "Downloading HoloPart model..."
+    if huggingface-cli download  VAST-AI/HoloPart --local-dir "$model_dir"; then
+        print_success "HoloPart model downloaded successfully"
+    else
+        print_error "Failed to download HoloPart model"
+        return 1
+    fi
+}
 
-# # Function to download UniRig model
-# download_unirig() {
-#     print_info "========================================"
-#     print_info "Downloading UniRig Model"
-#     print_info "========================================"
+# Function to download UniRig model
+download_unirig() {
+    print_info "========================================"
+    print_info "Downloading UniRig Model"
+    print_info "========================================"
     
-#     local model_dir="pretrained/UniRig"
+    local model_dir="pretrained/UniRig"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 3; then
-#         print_info "UniRig model already exists and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 3; then
+        print_info "UniRig model already exists and verified"
+        return 0
+    fi
     
-#     mkdir -p "$model_dir"
-#     print_info "Downloading UniRig model..."
-#     if huggingface-cli download  VAST-AI/UniRig --local-dir "$model_dir"; then
-#         print_success "UniRig model downloaded successfully"
-#     else
-#         print_error "Failed to download UniRig model"
-#         return 1
-#     fi
-# }
+    mkdir -p "$model_dir"
+    print_info "Downloading UniRig model..."
+    if huggingface-cli download  VAST-AI/UniRig --local-dir "$model_dir"; then
+        print_success "UniRig model downloaded successfully"
+    else
+        print_error "Failed to download UniRig model"
+        return 1
+    fi
+}
 
-# # Function to download PartPacker model
-# download_partpacker() {
-#     print_info "========================================"
-#     print_info "Downloading PartPacker Model"
-#     print_info "========================================"
+# Function to download PartPacker model
+download_partpacker() {
+    print_info "========================================"
+    print_info "Downloading PartPacker Model"
+    print_info "========================================"
     
-#     local model_dir="pretrained/PartPacker"
+    local model_dir="pretrained/PartPacker"
     
-#     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 3; then
-#         print_info "PartPacker model already exists and verified"
-#         return 0
-#     fi
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$model_dir" 3; then
+        print_info "PartPacker model already exists and verified"
+        return 0
+    fi
     
-#     mkdir -p "$model_dir"
-#     print_info "Downloading PartPacker model..."
-#     if huggingface-cli download  nvidia/PartPacker --local-dir "$model_dir"; then
-#         print_success "PartPacker model downloaded successfully"
-#     else
-#         print_error "Failed to download PartPacker model"
-#         return 1
-#     fi
-# }
+    mkdir -p "$model_dir"
+    print_info "Downloading PartPacker model..."
+    if huggingface-cli download  nvidia/PartPacker --local-dir "$model_dir"; then
+        print_success "PartPacker model downloaded successfully"
+    else
+        print_error "Failed to download PartPacker model"
+        return 1
+    fi
+}
 
 # Function to download miscellaneous models
 download_misc() {
@@ -397,7 +396,7 @@ download_misc() {
     print_info "Downloading Miscellaneous Models"
     print_info "========================================"
     
-    # RealESRGAN_x4plus for Hunyuan3D-2.1
+    # RealESRGAN_x4plus for Hunyuan3D21
     local realesrgan_path="pretrained/misc/RealESRGAN_x4plus.pth"
     if [ "$FORCE_DOWNLOAD" = false ] && verify_file "$realesrgan_path" 50000000; then # 50MB minimum
         print_info "RealESRGAN_x4plus already exists and verified"
@@ -410,20 +409,20 @@ download_misc() {
     fi
     
     # DINOv2-giant used in PartPacker or elsewhere
-    # local dinov2_dir="pretrained/dinov2-giant"
-    # if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$dinov2_dir" 5; then
-    #     print_info "DINOv2-giant model already exists and verified"
-    # else
-    #     mkdir -p "$dinov2_dir"
-    #     print_info "Downloading DINOv2-giant model..."
-    #     if huggingface-cli download  facebook/dinov2-giant \
-    #         --local-dir "$dinov2_dir" --exclude "*.bin"; then
-    #         print_success "DINOv2-giant model downloaded successfully"
-    #     else
-    #         print_error "Failed to download DINOv2-giant model"
-    #         return 1
-    #     fi
-    # fi
+    local dinov2_dir="pretrained/dinov2-giant"
+    if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$dinov2_dir" 5; then
+        print_info "DINOv2-giant model already exists and verified"
+    else
+        mkdir -p "$dinov2_dir"
+        print_info "Downloading DINOv2-giant model..."
+        if huggingface-cli download  facebook/dinov2-giant \
+            --local-dir "$dinov2_dir" --exclude "*.bin"; then
+            print_success "DINOv2-giant model downloaded successfully"
+        else
+            print_error "Failed to download DINOv2-giant model"
+            return 1
+        fi
+    fi
 }
 
 # Function to verify all models

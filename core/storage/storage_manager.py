@@ -20,7 +20,7 @@ class R2Client:
             )
         return cls._instance
 
-    def download_from_r2(self, object_key, local_file_path=None, bucket_name='lockness'):
+    def download_from_r2(self, object_key, local_file_path='', bucket_name='lockness'):
         """
         Download a file from Cloudflare R2 and save it to a local path.
         
@@ -28,7 +28,6 @@ class R2Client:
         :param local_file_path: The local path to save the downloaded file
         :param bucket_name: The name of the R2 bucket (default: 'lockness')
         """
-
         local_file_path = os.path.join(local_file_path,object_key)
         if not os.path.exists(os.path.dirname(local_file_path)):
             print(f"Creating directories for path: {local_file_path}")
@@ -62,21 +61,28 @@ class R2Client:
         self.s3_client.upload_file(local_file_path, bucket_name, object_key)
         print(f"File uploaded successfully to R2 at {object_key}")
 
-    def upload_folder_to_r2(self, local_folder_path, r2_base_key='', bucket_name='lockness'):
+    def upload_folder_to_r2(self, local_folder_path, r2_base_key='', bucket_name='lockness', skip_file=''):
         """
         Upload an entire local folder (recursively) to Cloudflare R2, preserving the folder structure in object keys.
-        
-        :param local_folder_path: The local path of the folder to upload
-        :param r2_base_key: Optional base key prefix in R2 (e.g., 'folder/') where the structure will be uploaded
-        :param bucket_name: The name of the R2 bucket (default: 'lockness')
         """
         print(f"Processing directory: {local_folder_path}")
         for root, dirs, files in os.walk(local_folder_path):
-            print(f"Processing directory: {root}")
             for file in files:
+                print(f"Processing sub directory: {file}")
                 local_file = os.path.join(root, file)
-                # relative_path = os.path.relpath(local_file, local_folder_path)
-                # object_key = os.path.join(local_file,r2_base_key, relative_path).replace('\\', '/')
-                # print(f"Uploading {local_file} to R2 at {object_key}")
-                self.s3_client.upload_file(local_file, bucket_name, local_file)
-            
+
+                # Skip unwanted file
+                if file == skip_file:
+                    continue
+
+                # Compute relative path inside the folder
+                relative_path = os.path.relpath(local_file, local_folder_path)
+
+                # Combine with base key (if any) and normalize to S3-style
+                object_key = os.path.join(r2_base_key, relative_path).replace("\\", "/")
+
+                print(f"Uploading {local_file} -> r2://{bucket_name}/{object_key}")
+
+                # Upload to R2
+                self.s3_client.upload_file(local_file, bucket_name, object_key)
+        print(f"Done============================================")

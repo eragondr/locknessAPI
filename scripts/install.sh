@@ -1,26 +1,26 @@
 #!/bin/bash
-
-# echo "========================================"
-# echo "Starting 3DAIGC-API Installation"
-# echo "========================================"
-# echo "The installation may take a while, please wait..."
-# echo ""
-
-# echo "[INFO] Creating conda environment '3daigc-api' with Python 3.10..."
-# conda create -n 3daigc-api python=3.10 -y
-# if [ $? -eq 0 ]; then
-#     echo "[SUCCESS] Conda environment created successfully"
-# else
-#     echo "[ERROR] Failed to create conda environment"
-#     exit 1
-# fi
-
-# echo "[INFO] Activating conda environment..."
-# conda activate 3daigc-api
-
-echo "[INFO] Installing PyTorch with CUDA 12.1 support..."
-## install pytorch for specific cuda versions
-pip  install torch torchvision
+#
+#echo "========================================"
+#echo "Starting 3DAIGC-API Installation"
+#echo "========================================"
+#echo "The installation may take a while, please wait..."
+#echo ""
+#
+#echo "[INFO] Creating conda environment '3daigc-api' with Python 3.10..."
+#conda create -n 3daigc-api python=3.10 -y
+#if [ $? -eq 0 ]; then
+#    echo "[SUCCESS] Conda environment created successfully"
+#else
+#    echo "[ERROR] Failed to create conda environment"
+#    exit 1
+#fi
+#
+#echo "[INFO] Activating conda environment..."
+#conda activate 3daigc-api
+#
+#echo "[INFO] Installing PyTorch with CUDA 12.1 support..."
+### install pytorch for specific cuda versions
+#pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 if [ $? -eq 0 ]; then
     echo "[SUCCESS] PyTorch installation completed"
 else
@@ -28,61 +28,61 @@ else
     exit 1
 fi
 
-#echo ""
-#echo "========================================"
-#echo "Installing TRELLIS Dependencies"
-#echo "========================================"
-#### we startup with the environment of trellis ###
-#echo "[INFO] Changing directory to thirdparty/TRELLIS..."
-#cd thirdparty/TRELLIS
-#echo "[INFO] Running TRELLIS setup script..."
-#. ./setup.sh --basic --xformers --flash-attn --diffoctreerast --spconv --mipgaussian --kaolin --nvdiffrast
-#pip install kaolin -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.4.0_cu121.html
-#if [ $? -eq 0 ]; then
-#    echo "[SUCCESS] TRELLIS setup completed"
-#else
-#    echo "[ERROR] TRELLIS setup failed"
-#    exit 1
-#fi
+echo ""
+echo "========================================"
+echo "Installing TRELLIS Dependencies"
+echo "========================================"
+### we startup with the environment of trellis ###
+echo "[INFO] Changing directory to thirdparty/TRELLIS..."
+cd thirdparty/TRELLIS
+echo "[INFO] Running TRELLIS setup script..."
+. ./setup.sh --basic --xformers --flash-attn --diffoctreerast --spconv --mipgaussian --kaolin --nvdiffrast
+pip install kaolin -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.4.0_cu121.html
+if [ $? -eq 0 ]; then
+    echo "[SUCCESS] TRELLIS setup completed"
+else
+    echo "[ERROR] TRELLIS setup failed"
+    exit 1
+fi
 # for systems with glibc < 2.29 , you may need to build kaolin from source manually
-#echo "[NOTE] For systems with glibc < 2.29, you may need to build kaolin from source manually"
-#
-#echo ""
-#echo "========================================"
-#echo "Installing PartField Dependencies"
-#echo "========================================"
-## install PartField for mesh segmentation
-#echo "[INFO] Changing directory to thirdparty/PartField..."
-#cd ../../thirdparty/PartField
-#echo "[INFO] Installing PartField core dependencies..."
-#pip install lightning==2.2 h5py yacs trimesh scikit-image loguru boto3
-#if [ $? -eq 0 ]; then
-#    echo "[SUCCESS] PartField core dependencies installed"
-#else
-#    echo "[ERROR] Failed to install PartField core dependencies"
-#    exit 1
-#fi
-#
-#echo "[INFO] Installing additional PartField dependencies..."
-#pip install mesh2sdf tetgen pymeshlab plyfile einops libigl polyscope potpourri3d simple_parsing arrgh open3d psutil
-#if [ $? -eq 0 ]; then
-#    echo "[SUCCESS] Additional PartField dependencies installed"
-#else
-#    echo "[ERROR] Failed to install additional PartField dependencies"
-#    exit 1
-#fi
-#
-#echo "[INFO] Installing PyTorch Geometric extensions..."
-#pip install torch-scatter torch_cluster -f https://data.pyg.org/whl/torch-2.4.0+cu121.html
-#if [ $? -eq 0 ]; then
-#    echo "[SUCCESS] PyTorch Geometric extensions installed"
-#else
-#    echo "[ERROR] Failed to install PyTorch Geometric extensions"
-#    exit 1
-#fi
-## installation for PartField end
-#echo "[SUCCESS] PartField installation completed"
-#
+echo "[NOTE] For systems with glibc < 2.29, you may need to build kaolin from source manually"
+
+echo ""
+echo "========================================"
+echo "Installing PartField Dependencies"
+echo "========================================"
+# install PartField for mesh segmentation
+echo "[INFO] Changing directory to thirdparty/PartField..."
+cd ../../thirdparty/PartField
+echo "[INFO] Installing PartField core dependencies..."
+pip install lightning==2.2 h5py yacs trimesh scikit-image loguru boto3
+if [ $? -eq 0 ]; then
+    echo "[SUCCESS] PartField core dependencies installed"
+else
+    echo "[ERROR] Failed to install PartField core dependencies"
+    exit 1
+fi
+
+echo "[INFO] Installing additional PartField dependencies..."
+pip install mesh2sdf tetgen pymeshlab plyfile einops libigl polyscope potpourri3d simple_parsing arrgh open3d psutil
+if [ $? -eq 0 ]; then
+    echo "[SUCCESS] Additional PartField dependencies installed"
+else
+    echo "[ERROR] Failed to install additional PartField dependencies"
+    exit 1
+fi
+
+echo "[INFO] Installing PyTorch Geometric extensions..."
+pip install torch-scatter torch_cluster -f https://data.pyg.org/whl/torch-2.4.0+cu121.html
+if [ $? -eq 0 ]; then
+    echo "[SUCCESS] PyTorch Geometric extensions installed"
+else
+    echo "[ERROR] Failed to install PyTorch Geometric extensions"
+    exit 1
+fi
+ installation for PartField end
+echo "[SUCCESS] PartField installation completed"
+
 #echo ""
 #echo "========================================"
 #echo "Installing Hunyuan3D 2.0 Dependencies"
@@ -131,29 +131,35 @@ fi
 #fi
 #### installation for hunyuan3d 2.0 end ###
 #echo "[SUCCESS] Hunyuan3D 2.0 installation completed"
-#
-#echo ""
-echo "========================================"
-echo "Installing Hunyuan3D 2.1 Dependencies"
-echo "========================================"
-### installation for hunyuan3d 2.1  ###
-echo "[INFO] Changing directory to thirdparty/Hunyuan3D-2.1..."
-pip install -r requirements-inference.txt 
-cd  thirdparty/Hunyuan3D-2.1
-echo "[INFO] Installing custom rasterizer for Hunyuan3D 2.1..."
 
+cd ../..
+echo ""
+echo "Installing Hunyuan3D 2.1 Dependencies"
+### installation for hunyuan3d 2.1  ###
+echo "========================================"
+echo "[INFO] Changing directory to thirdparty/Hunyuan3D-2.1..."
+echo "========================================"
+
+cd thirdparty/Hunyuan3D-21
+echo "[INFO] Installing custom rasterizer for Hunyuan3D 2.1..."
+pip install -r requirements-inference.txt
+pip install -r requirements.txt
 cd hy3dpaint/custom_rasterizer
 pip install -e .
+python setup.py install
 if [ $? -eq 0 ]; then
     echo "[SUCCESS] Hunyuan3D 2.1 custom rasterizer installed"
 else
     echo "[ERROR] Failed to install Hunyuan3D 2.1 custom rasterizer"
     exit 1
 fi
+cd ..
 
 echo "[INFO] Building differentiable renderer for Hunyuan3D 2.1..."
-cd ../..
+echo "Before directory after cd: $(pwd)"
+cd ..
 cd hy3dpaint/DifferentiableRenderer
+echo "Current directory after cd: $(pwd)"
 bash compile_mesh_painter.sh
 if [ $? -eq 0 ]; then
     echo "[SUCCESS] Hunyuan3D 2.1 differentiable renderer built successfully"
@@ -219,8 +225,8 @@ echo "[SUCCESS] Hunyuan3D 2.1 installation completed"
 #fi
 #### part packer end ###
 #echo "[SUCCESS] PartPacker installation completed"
-
-cd ../../
+#
+#cd ../../
 
 echo ""
 echo "========================================"
@@ -238,13 +244,13 @@ fi
 
 echo "[INFO] Installing test requirements..."
 # testing 
-pip install -r requirements-test.txt 
-if [ $? -eq 0 ]; then
-    echo "[SUCCESS] Test requirements installed"
-else
-    echo "[ERROR] Failed to install test requirements"
-    exit 1
-fi
+#pip install -r requirements-test.txt
+#if [ $? -eq 0 ]; then
+#    echo "[SUCCESS] Test requirements installed"
+#else
+#    echo "[ERROR] Failed to install test requirements"
+#    exit 1
+#fi
 
 echo "[INFO] Installing huggingface_hub for model downloading..."
 # for downloading models 

@@ -1,7 +1,7 @@
 # Torchvision compatibility fix for functional_tensor module
 # This file helps resolve compatibility issues between different torchvision versions
 
-### Migrated from thirdparty/Hunyuan3D-2.1/torchvision_fix.py
+### Migrated from thirdparty/Hunyuan3D21/torchvision_fix.py
 
 import sys
 

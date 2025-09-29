@@ -11,12 +11,15 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
+import shutil
 import torch
 from PIL import Image
-
+from matplotlib.image import thumbnail
+from pyglet.libs.x11.xinput import CREATE
+from core.utils.thumbnail_utils import generate_mesh_thumbnail
 from core.models.base import ModelStatus
 from core.models.mesh_models import ImageToMeshModel
+from core.storage.storage_manager import R2Client
 from utils.file_utils import OutputPathGenerator
 from utils.mesh_utils import MeshProcessor
 
@@ -46,11 +49,11 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
             model_id = self.MODEL_ID
         if model_path is None:
             model_path = os.path.abspath(
-                os.path.join(os.getcwd(), "pretrained", "tencent", "Hunyuan3D-2.1")
+                os.path.join(os.getcwd(), "pretrained", "tencent", "Hunyuan3D21")
             )
         if hunyuan3d_root is None:
             hunyuan3d_root = os.path.abspath(
-                os.path.join(os.getcwd(), "thirdparty", "Hunyuan3D-2.1")
+                os.path.join(os.getcwd(), "thirdparty", "Hunyuan3D21")
             )
         if feature_type is None:
             feature_type = self.FEATURE_TYPE
@@ -104,7 +107,6 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
             # Load shape generation pipeline if needed
             if self.load_shapegen:
-
                 from hy3dshape.pipelines import (
                     Hunyuan3DDiTFlowMatchingPipeline,
                 )
@@ -124,7 +126,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
             # Load paint pipeline if needed
             if self.load_painting:
-                from hy3dpaint.textureGenPipeline import (
+                from thirdparty.Hunyuan3D21.hy3dpaint.textureGenPipeline import (
                     Hunyuan3DPaintConfig,
                     Hunyuan3DPaintPipeline,
                 )
@@ -143,15 +145,17 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 )
                 conf.multiview_pretrained_path = str(self.model_path)
                 conf.dino_ckpt_path = str(
-                    self.model_path / ".." / ".." / "dinov2-giant"
+                    # self.model_path / ".." / ".." / "dinov2-giant"
+                    self.model_path / "dinov2-giant"
                 )
                 conf.realesrgan_ckpt_path = str(
-                    self.model_path / ".." / ".." / "misc" / "RealESRGAN_x4plus.pth"
+                    self.model_path / "misc" / "RealESRGAN_x4plus.pth"
                 )
 
                 if "bg_remover" not in loaded_models:
                     self.bg_remover = BackgroundRemover()
                     loaded_models["bg_remover"] = self.bg_remover
+
 
                 self.paint_pipeline = Hunyuan3DPaintPipeline(conf)
                 loaded_models["paint"] = self.paint_pipeline
@@ -194,22 +198,29 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
         """
         raise NotImplementedError("Subclasses must implement _process_request")
 
-    def _generate_output_path(self, base_name: str, output_format: str) -> Path:
+    def _generate_output_path(self, base_name: str,output_format: str, output_path= "") -> Path:
         """Generate output file path."""
+        if output_path == "":
+            output_path = self.model_id
         return self.path_generator.generate_mesh_path(
-            self.model_id, base_name, output_format
+            output_path, base_name, output_format
         )
 
     def _generate_thumbnail_path(self, mesh_path: Path) -> Path:
         """Generate thumbnail file path based on mesh path."""
+
+        # thumbnail_dir = Path(os.getcwd()) / "outputs" / "thumbnails"
+        # thumbnail_dir.mkdir(parents=True, exist_ok=True)
+        #
+        # # Generate thumbnail filename
+        # thumbnail_name = mesh_path.stem + "_thumb.png"
+        # return thumbnail_dir / thumbnail_name
+
         # Create thumbnails directory
-        thumbnail_dir = Path(os.getcwd()) / "outputs" / "thumbnails"
-        thumbnail_dir.mkdir(parents=True, exist_ok=True)
-
+        thumbnail_dir =  Path(os.path.dirname(mesh_path))
         # Generate thumbnail filename
-        thumbnail_name = mesh_path.stem + "_thumb.png"
+        thumbnail_name = "thumb.png"
         return thumbnail_dir / thumbnail_name
-
     def get_supported_formats(self) -> Dict[str, List[str]]:
         """Return supported input/output formats for Hunyuan3D 2.1."""
         return {"input": ["png", "jpg", "jpeg"], "output": ["glb", "obj"]}
@@ -262,32 +273,65 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
 
             # Shape generation only
             logger.info("Generating 3D shape...")
-            mesh_result = self.pipeline_shapegen(image=image,num_inference_steps=5)[0]
+            mesh_result = self.pipeline_shapegen(image=image)[0]
 
             # Generate output path
-            base_name = f"{self.model_id}_{image_path.stem}"
-            output_path = self._generate_output_path(base_name, output_format)
+            # base_name = f"{self.model_id}_{image_path.stem}"
+            output_path = os.path.dirname(image_path)
+            base_name =  "raw_model"
+            mesh_path = self._generate_output_path(base_name, output_format,output_path=output_path)
 
             # Save raw mesh
-            self.mesh_processor.save_mesh(mesh_result, output_path)
+            self.mesh_processor.save_mesh(mesh_result, mesh_path)
+            # thumbnail_path = self._generate_thumbnail_path(output_path)
+            # thumbnail_generated = generate_mesh_thumbnail(
+            #     str(mesh_path), str(thumbnail_path)
+            # )
 
-            # Load final mesh for statistics
-            final_mesh = self.mesh_processor.load_mesh(output_path)
-            mesh_stats = self.mesh_processor.get_mesh_stats(final_mesh)
+            if R2Client._instance is None:
+                client = R2Client()
+                client.upload_folder_to_r2(output_path, r2_base_key=output_path,skip_file=os.path.basename(image_path))
+            else:
+                R2Client._instance.upload_folder_to_r2(output_path, r2_base_key=output_path,skip_file=os.path.basename(image_path))
 
-            # Create response
             response = {
-                "output_mesh_path": str(output_path),
-                "success": True,
-                "generation_info": {
-                    "model": self.model_id,
-                    "input_image": str(image_path),
-                    "output_format": output_format,
-                    "vertex_count": mesh_stats["vertex_count"],
-                    "face_count": mesh_stats["face_count"],
-                    "has_texture": False,
-                },
-            }
+                    "output_mesh_path": str(output_path),
+                    "success": True,
+                    "generation_info": {
+                        "file_url": str(output_path),
+                        "has_texture": False,
+                    },
+                }
+            shutil.rmtree(output_path)
+            # Load final mesh for statistics
+
+            #old work flow
+            # mesh_result = self.pipeline_shapegen(image=image)[0]
+            #
+            # # Generate output path
+            # base_name = f"{self.model_id}_{image_path.stem}"
+            # output_path = self._generate_output_path(base_name, output_format)
+            #
+            # # Save raw mesh
+            # self.mesh_processor.save_mesh(mesh_result, output_path)
+            #
+            # # Load final mesh for statistics
+            # final_mesh = self.mesh_processor.load_mesh(output_path)
+            # mesh_stats = self.mesh_processor.get_mesh_stats(final_mesh)
+            #
+            # # Create response
+            # response = {
+            #     "output_mesh_path": str(output_path),
+            #     "success": True,
+            #     "generation_info": {
+            #         "model": self.model_id,
+            #         "input_image": str(image_path),
+            #         "output_format": output_format,
+            #         "vertex_count": mesh_stats["vertex_count"],
+            #         "face_count": mesh_stats["face_count"],
+            #         "has_texture": False,
+            #     },
+            # }
 
             logger.info(f"Hunyuan3D 2.1 raw mesh generation completed: {output_path}")
             self.status = ModelStatus.LOADED
@@ -477,7 +521,7 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             # Extract parameters
             output_format = inputs.get("output_format", "glb")
             max_num_view = inputs.get("max_num_view", 6)
-            resolution = inputs.get("resolution", 512)
+            resolution = inputs.get("resolution", 712)
 
             if output_format not in self.supported_output_formats:
                 raise ValueError(f"Unsupported output format: {output_format}")
@@ -487,15 +531,67 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             )
 
             # Update paint pipeline config
-            if hasattr(self.paint_pipeline.config, "max_num_view"):
-                self.paint_pipeline.config.max_num_view = max_num_view
-            if hasattr(self.paint_pipeline.config, "resolution"):
-                self.paint_pipeline.config.resolution = resolution
-
+            # if hasattr(self.paint_pipeline.config, "max_num_view"):
+            #     self.paint_pipeline.config.max_num_view = max_num_view
+            # if hasattr(self.paint_pipeline.config, "resolution"):
+            #     self.paint_pipeline.config.resolution = resolution
+            #
+            # output_path = os.path.dirname(image_path)
+            # # base_name = f"texture_model_{image_path.stem}"
+            # # output_path = self._generate_output_path(base_name, output_format, output_path=output_path)
+            # #
+            # # # Save raw mesh
+            # # final_mesh_path = self.paint_pipeline(
+            # #         str(mesh_path), str(image_path), str(output_path)
+            # #     )
+            # #
+            # # print(final_mesh_path)
+            #
+            # # Generate output path
+            # base_name = f"texture_model_{image_path.stem}"
+            # output_path = self.path_generator.generate_mesh_path(
+            #     str(output_path), base_name, output_format
+            # )
+            # print(str(output_path)+"aaaaaaaaaaaaaaaa")
+            # # Run texture painting
+            # logger.info("Generating texture...")
+            # final_mesh_path = self.paint_pipeline(
+            #     str(mesh_path), str(image_path), str(output_path)
+            # )
+            # print(str(final_mesh_path) + "bbbbbbbbbbbbbbbbbbbbbbbb")
+            # # Ensure the output is at our desired path
+            # if final_mesh_path != str(output_path):
+            #     import shutil
+            #
+            #     shutil.move(final_mesh_path, output_path)
+            #
+            # # Load final mesh for statistics
+            #
+            # if R2Client._instance is None:
+            #     client = R2Client()
+            #     client.upload_folder_to_r2(output_path, r2_base_key=output_path, skip_file=os.path.basename(image_path))
+            # else:
+            #     R2Client._instance.upload_folder_to_r2(output_path, r2_base_key=output_path,
+            #                                            skip_file=os.path.basename(image_path))
+            #
+            # response = {
+            #         "output_mesh_path": str(output_path),
+            #         "success": True,
+            #         "painting_info": {
+            #             "model": self.model_id,
+            #             "input_mesh": str(mesh_path),
+            #             "input_image": str(image_path),
+            #             "output_format": output_format,
+            #             "max_num_view": max_num_view,
+            #             "resolution": resolution,
+            #             "file_url": str(output_path),
+            #             }
+            #         },
+            # old work flow
             # Generate output path
-            base_name = f"{self.model_id}_{mesh_path.stem}_{image_path.stem}"
+            base_name = f"texture_model_{image_path.stem}"
             output_path = self.path_generator.generate_mesh_path(
-                self.model_id, base_name, output_format
+                os.path.dirname(image_path), base_name, output_format
             )
 
             # Run texture painting
@@ -503,32 +599,51 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             final_mesh_path = self.paint_pipeline(
                 str(mesh_path), str(image_path), str(output_path)
             )
-
             # Ensure the output is at our desired path
             if final_mesh_path != str(output_path):
                 import shutil
 
                 shutil.move(final_mesh_path, output_path)
 
+
             # Load final mesh for statistics
             final_mesh = self.mesh_processor.load_mesh(output_path)
             mesh_stats = self.mesh_processor.get_mesh_stats(final_mesh)
+            if R2Client._instance is None:
+                client = R2Client()
+                client.upload_folder_to_r2(output_path, r2_base_key=output_path, skip_file=os.path.basename(image_path))
+            else:
+                R2Client._instance.upload_folder_to_r2(output_path, r2_base_key=output_path,
+                                                       skip_file=os.path.basename(image_path))
 
-            # Create response
             response = {
-                "output_mesh_path": str(output_path),
-                "success": True,
-                "painting_info": {
-                    "model": self.model_id,
-                    "input_mesh": str(mesh_path),
-                    "input_image": str(image_path),
-                    "output_format": output_format,
-                    "vertex_count": mesh_stats["vertex_count"],
-                    "face_count": mesh_stats["face_count"],
-                    "max_num_view": max_num_view,
-                    "resolution": resolution,
-                },
-            }
+                        "output_mesh_path": str(output_path),
+                        "success": True,
+                        "painting_info": {
+                            "model": self.model_id,
+                            "input_mesh": str(mesh_path),
+                            "input_image": str(image_path),
+                            "output_format": output_format,
+                            "max_num_view": max_num_view,
+                            "resolution": resolution,
+                            "file_url": str(output_path),
+                            }
+                        },
+            # Create response
+            # response = {
+            #     "output_mesh_path": str(output_path),
+            #     "success": True,
+            #     "painting_info": {
+            #         "model": self.model_id,
+            #         "input_mesh": str(mesh_path),
+            #         "input_image": str(image_path),
+            #         "output_format": output_format,
+            #         "vertex_count": mesh_stats["vertex_count"],
+            #         "face_count": mesh_stats["face_count"],
+            #         "max_num_view": max_num_view,
+            #         "resolution": resolution,
+            #     },
+            # }
 
             logger.info(f"Hunyuan3D 2.1 mesh painting completed: {output_path}")
             return response

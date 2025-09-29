@@ -1,7 +1,7 @@
 """
-Real GPU inference tests for Hunyuan3D-2.1 adapters.
+Real GPU inference tests for Hunyuan3D21 adapters.
 
-Tests the Hunyuan3D-2.1 adapters with actual model inference on GPU.
+Tests the Hunyuan3D21 adapters with actual model inference on GPU.
 No mocks - this performs real image-to-mesh generation.
 """
 

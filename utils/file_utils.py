@@ -3,6 +3,7 @@ File handling utilities for adapters.
 """
 
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Union
@@ -24,11 +25,14 @@ class OutputPathGenerator:
         subdirectory: str = "meshes",
     ) -> Path:
         """Generate output path for mesh files."""
-        output_dir = self.base_output_dir / subdirectory
-        output_dir.mkdir(parents=True, exist_ok=True)
-
+        # output_dir = self.base_output_dir / subdirectory
+        # output_dir.mkdir(parents=True, exist_ok=True)
+        output_dir = Path(model_id)
+        if not os.path.exists(output_dir):
+            output_dir.mkdir(parents=True, exist_ok=True)
         timestamp = int(time.time())
-        filename = f"{model_id}_{base_name}_{timestamp}.{output_format}"
+        # filename = f"{model_id}_{base_name}_{timestamp}.{output_format}"
+        filename = f"{base_name}_{timestamp}.{output_format}"
 
         return output_dir / filename
 

@@ -19,37 +19,71 @@ class ModelFactory:
     """Factory for creating model instances from configuration"""
 
     # Registry of known adapter modules and classes
+    # ADAPTER_REGISTRY = {
+    #     # TRELLIS adapters
+    #     "trellis_text_to_textured_mesh": {
+    #         "module": "adapters.trellis_adapter",
+    #         "class": "TrellisTextToTexturedMeshAdapter",
+    #     },
+    #     "trellis_text_mesh_painting": {
+    #         "module": "adapters.trellis_adapter",
+    #         "class": "TrellisTextMeshPaintingAdapter",
+    #     },
+    #     "trellis_image_to_textured_mesh": {
+    #         "module": "adapters.trellis_adapter",
+    #         "class": "TrellisImageToTexturedMeshAdapter",
+    #     },
+    #     "trellis_image_mesh_painting": {
+    #         "module": "adapters.trellis_adapter",
+    #         "class": "TrellisImageMeshPaintingAdapter",
+    #     },
+    #     # Hunyuan3D adapters
+    #     "hunyuan3d_2_0_image_to_raw_mesh": {
+    #         "module": "adapters.hunyuan3d_adapter_v20",
+    #         "class": "Hunyuan3DV20ImageToRawMeshAdapter",
+    #     },
+    #     "hunyuan3d_2_0_image_to_textured_mesh": {
+    #         "module": "adapters.hunyuan3d_adapter_v20",
+    #         "class": "Hunyuan3DV20ImageToTexturedMeshAdapter",
+    #     },
+    #     "hunyuan3d_2_0_image_mesh_painting": {
+    #         "module": "adapters.hunyuan3d_adapter_v20",
+    #         "class": "Hunyuan3DV20ImageMeshPaintingAdapter",
+    #     },
+    #     "hunyuan3d_image_to_raw_mesh": {
+    #         "module": "adapters.hunyuan3d_adapter_v21",
+    #         "class": "Hunyuan3DV21ImageToRawMeshAdapter",
+    #     },
+    #     "hunyuan3d_image_to_textured_mesh": {
+    #         "module": "adapters.hunyuan3d_adapter_v21",
+    #         "class": "Hunyuan3DV21ImageToTexturedMeshAdapter",
+    #     },
+    #     "hunyuan3d_image_mesh_painting": {
+    #         "module": "adapters.hunyuan3d_adapter_v21",
+    #         "class": "Hunyuan3DV21ImageMeshPaintingAdapter",
+    #     },
+    #     # PartField adapters
+    #     "partfield_mesh_segmentation": {
+    #         "module": "adapters.partfield_adapter",
+    #         "class": "PartFieldSegmentationAdapter",
+    #     },
+    #     # HoloPart adapters
+    #     "holopart_part_completion": {
+    #         "module": "adapters.holopart_adapter",
+    #         "class": "HoloPartCompletionAdapter",
+    #     },
+    #     # PartPacker adapters
+    #     "partpacker_part_packing": {
+    #         "module": "adapters.partpacker_adapter",
+    #         "class": "PartPackerImageToRawMeshAdapter",
+    #     },
+    #     # UniRig adapters
+    #     "unirig_auto_rig": {
+    #         "module": "adapters.unirig_adapter",
+    #         "class": "UniRigAdapter",
+    #     },
+    # }
     ADAPTER_REGISTRY = {
-        # TRELLIS adapters
-        "trellis_text_to_textured_mesh": {
-            "module": "adapters.trellis_adapter",
-            "class": "TrellisTextToTexturedMeshAdapter",
-        },
-        "trellis_text_mesh_painting": {
-            "module": "adapters.trellis_adapter",
-            "class": "TrellisTextMeshPaintingAdapter",
-        },
-        "trellis_image_to_textured_mesh": {
-            "module": "adapters.trellis_adapter",
-            "class": "TrellisImageToTexturedMeshAdapter",
-        },
-        "trellis_image_mesh_painting": {
-            "module": "adapters.trellis_adapter",
-            "class": "TrellisImageMeshPaintingAdapter",
-        },
-        # Hunyuan3D adapters
-        "hunyuan3d_2_0_image_to_raw_mesh": {
-            "module": "adapters.hunyuan3d_adapter_v20",
-            "class": "Hunyuan3DV20ImageToRawMeshAdapter",
-        },
-        "hunyuan3d_2_0_image_to_textured_mesh": {
-            "module": "adapters.hunyuan3d_adapter_v20",
-            "class": "Hunyuan3DV20ImageToTexturedMeshAdapter",
-        },
-        "hunyuan3d_2_0_image_mesh_painting": {
-            "module": "adapters.hunyuan3d_adapter_v20",
-            "class": "Hunyuan3DV20ImageMeshPaintingAdapter",
-        },
         "hunyuan3d_image_to_raw_mesh": {
             "module": "adapters.hunyuan3d_adapter_v21",
             "class": "Hunyuan3DV21ImageToRawMeshAdapter",
@@ -62,26 +96,7 @@ class ModelFactory:
             "module": "adapters.hunyuan3d_adapter_v21",
             "class": "Hunyuan3DV21ImageMeshPaintingAdapter",
         },
-        # PartField adapters
-        "partfield_mesh_segmentation": {
-            "module": "adapters.partfield_adapter",
-            "class": "PartFieldSegmentationAdapter",
-        },
-        # HoloPart adapters
-        "holopart_part_completion": {
-            "module": "adapters.holopart_adapter",
-            "class": "HoloPartCompletionAdapter",
-        },
-        # PartPacker adapters
-        "partpacker_part_packing": {
-            "module": "adapters.partpacker_adapter",
-            "class": "PartPackerImageToRawMeshAdapter",
-        },
-        # UniRig adapters
-        "unirig_auto_rig": {
-            "module": "adapters.unirig_adapter",
-            "class": "UniRigAdapter",
-        },
+
     }
 
     @classmethod
