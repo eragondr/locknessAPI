@@ -32,7 +32,7 @@ class OutputPathGenerator:
             output_dir.mkdir(parents=True, exist_ok=True)
         timestamp = int(time.time())
         # filename = f"{model_id}_{base_name}_{timestamp}.{output_format}"
-        filename = f"{base_name}_{timestamp}.{output_format}"
+        filename = f"{base_name}.{output_format}"
 
         return output_dir / filename
 

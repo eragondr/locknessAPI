@@ -278,7 +278,7 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
             # Generate output path
             # base_name = f"{self.model_id}_{image_path.stem}"
             output_path = os.path.dirname(image_path)
-            base_name =  "raw_model"
+            base_name =  f"raw_mesh{image_path.stem}"
             mesh_path = self._generate_output_path(base_name, output_format,output_path=output_path)
 
             # Save raw mesh
