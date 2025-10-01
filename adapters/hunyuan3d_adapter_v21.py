@@ -11,7 +11,7 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import shutil
+
 import torch
 from PIL import Image
 from matplotlib.image import thumbnail
@@ -22,7 +22,7 @@ from core.models.mesh_models import ImageToMeshModel
 from core.storage.storage_manager import R2Client
 from utils.file_utils import OutputPathGenerator
 from utils.mesh_utils import MeshProcessor
-
+import shutil
 logger = logging.getLogger(__name__)
 
 
@@ -217,13 +217,19 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
         # return thumbnail_dir / thumbnail_name
 
         # Create thumbnails directory
-        thumbnail_dir =  Path(os.path.dirname(mesh_path))
+        thumbnail_dir =  Path(self.get_parrent_folder(str(mesh_path)))
         # Generate thumbnail filename
         thumbnail_name = "thumb.png"
         return thumbnail_dir / thumbnail_name
     def get_supported_formats(self) -> Dict[str, List[str]]:
         """Return supported input/output formats for Hunyuan3D 2.1."""
         return {"input": ["png", "jpg", "jpeg"], "output": ["glb", "obj"]}
+    def get_parrent_folder(self, file_path:str)->str:
+        last_slash_index = file_path.rfind('/')
+
+        # Slice up to that index to get the parent folder
+        parent_folder = file_path[:last_slash_index] if last_slash_index != -1 else ""
+        return parent_folder
 
 
 class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
@@ -277,7 +283,7 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
 
             # Generate output path
             # base_name = f"{self.model_id}_{image_path.stem}"
-            output_path = os.path.dirname(image_path)
+            output_path = self.get_parrent_folder(str(image_path))
             base_name =  f"raw_mesh{image_path.stem}"
             mesh_path = self._generate_output_path(base_name, output_format,output_path=output_path)
 
@@ -290,9 +296,9 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
 
             if R2Client._instance is None:
                 client = R2Client()
-                client.upload_folder_to_r2(output_path, r2_base_key=output_path,skip_file=os.path.basename(image_path))
+                client.upload_folder_to_r2(output_path, r2_base_key=output_path,skip_file=image_path.stem)
             else:
-                R2Client._instance.upload_folder_to_r2(output_path, r2_base_key=output_path,skip_file=os.path.basename(image_path))
+                R2Client._instance.upload_folder_to_r2(output_path, r2_base_key=output_path,skip_file=image_path.stem)
 
             response = {
                     "output_mesh_path": str(output_path),
@@ -590,8 +596,11 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             # old work flow
             # Generate output path
             base_name = f"texture_model_{image_path.stem}"
+            # output_path = self.path_generator.generate_mesh_path(
+            #     os.path.dirname(image_path), base_name, output_format
+            # )
             output_path = self.path_generator.generate_mesh_path(
-                os.path.dirname(image_path), base_name, output_format
+                self.get_parrent_folder(str(image_path)), base_name, output_format
             )
 
             # Run texture painting
@@ -601,23 +610,24 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             )
             # Ensure the output is at our desired path
             if final_mesh_path != str(output_path):
-                import shutil
+
 
                 shutil.move(final_mesh_path, output_path)
 
 
             # Load final mesh for statistics
-            final_mesh = self.mesh_processor.load_mesh(output_path)
-            mesh_stats = self.mesh_processor.get_mesh_stats(final_mesh)
+            # final_mesh = self.mesh_processor.load_mesh(output_path)
+            # mesh_stats = self.mesh_processor.get_mesh_stats(final_mesh)
+            logger.info(f"Texture generation complete: {self.get_parrent_folder(str(output_path))}")
             if R2Client._instance is None:
                 client = R2Client()
-                client.upload_folder_to_r2(output_path, r2_base_key=output_path, skip_file=os.path.basename(image_path))
+                client.upload_folder_to_r2(self.get_parrent_folder(str(output_path)), r2_base_key=self.get_parrent_folder(str(output_path)), skip_file=image_path.stem)
             else:
-                R2Client._instance.upload_folder_to_r2(output_path, r2_base_key=output_path,
-                                                       skip_file=os.path.basename(image_path))
+                R2Client._instance.upload_folder_to_r2(self.get_parrent_folder(str(output_path)), r2_base_key=self.get_parrent_folder(str(output_path)),
+                                                       skip_file=image_path.stem)
 
             response = {
-                        "output_mesh_path": str(output_path),
+                        "output_mesh_path": self.get_parrent_folder(str(output_path)),
                         "success": True,
                         "painting_info": {
                             "model": self.model_id,
@@ -629,6 +639,7 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
                             "file_url": str(output_path),
                             }
                         },
+            shutil.rmtree(self.get_parrent_folder(str(output_path)))
             # Create response
             # response = {
             #     "output_mesh_path": str(output_path),

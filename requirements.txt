@@ -45,3 +45,8 @@ python-jose[cryptography]==3.3.0
 # Optional: For production deployment
 gunicorn==21.2.0
 redis==5.0.1  # For caching and job queues
+torch-cluster==1.6.3
+pyglet==2.1.9
+boto3==2.49.0
+easydict==1.13
+lightning==2.5.5

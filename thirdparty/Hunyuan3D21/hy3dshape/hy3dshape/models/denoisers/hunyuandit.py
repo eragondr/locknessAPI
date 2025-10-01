@@ -361,7 +361,6 @@ class HunYuanDiTBlock(nn.Module):
 
         self.use_moe = use_moe
         if self.use_moe:
-            print("using moe")
             self.moe = MoEBlock(
                 hidden_size,
                 num_experts=num_experts,
