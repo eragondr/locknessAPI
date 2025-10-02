@@ -161,7 +161,7 @@ echo "[INFO] Installing custom rasterizer for Hunyuan3D21..."
 pip install -r requirements-inference.txt
 pip install -r requirements.txt
 pip install bpy==4.0 --extra-index-url https://download.blender.org/pypi/
-pip install boto3==2.49.0
+pip install boto3==1.40.43
 pip install pyglet==2.1.9
 pip install torch-cluster==1.6.3
 pip install easydict==1.13
