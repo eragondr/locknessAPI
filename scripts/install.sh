@@ -168,6 +168,8 @@ pip install easydict==1.13
 pip install lightning==2.5.5
 pip install plyfile==1.1.2
 pip install kiui==0.2.18
+pip install pydantic_settings
+pip install sqlalchemy
 echo "[INFO] Changing directory to hy3dpaint/custom_rasterizer..."
 echo "Current directory: $(pwd)"
 cd hy3dpaint/custom_rasterizer
