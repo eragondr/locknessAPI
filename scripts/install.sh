@@ -146,8 +146,7 @@ echo "[INFO] Installing PyTorch with CUDA 12.8 support..."
 
 #cd ../..
 cd ..
-huggingface-cli download  tencent/Hunyuan3D-2.1 --local-dir "pretrained/tencent/Hunyuan3D21"
-huggingface-cli download  facebook/dinov2-giant  --local-dir "pretrained/tencent/Hunyuan3D21/dinov2-giant"
+
 
 echo ""
 echo "Current directory: $(pwd)"
@@ -196,7 +195,8 @@ else
 fi
 cd ../..
 echo "[INFO] Installing Hunyuan3D21 requirements..."
-
+huggingface-cli download  tencent/Hunyuan3D-2.1 --local-dir "pretrained/tencent/Hunyuan3D21"
+huggingface-cli download  facebook/dinov2-giant  --local-dir "pretrained/tencent/Hunyuan3D21/dinov2-giant"
 ### installation for Hunyuan3D21 end ###
 echo "[SUCCESS] Hunyuan3D21 installation completed"
 
