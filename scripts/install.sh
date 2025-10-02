@@ -171,7 +171,8 @@ pip install kiui==0.2.18
 echo "[INFO] Changing directory to hy3dpaint/custom_rasterizer..."
 echo "Current directory: $(pwd)"
 cd hy3dpaint/custom_rasterizer
-pip install -e .
+set DISTUTILS_USE_SDK=1
+pip install -e . --no-build-isolation
 python setup.py install
 if [ $? -eq 0 ]; then
     echo "[SUCCESS] Hunyuan3D21 custom rasterizer installed"
