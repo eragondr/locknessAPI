@@ -137,6 +137,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 max_num_view = 6
                 resolution = 768
                 conf = Hunyuan3DPaintConfig(max_num_view, resolution)
+                logger.info("1=====================")
                 conf.device = "cpu"
                 conf.realesrgan_ckpt_path = str(
                     self.model_path / "misc" / "RealESRGAN_x4plus.pth"
@@ -160,8 +161,9 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                     self.bg_remover = BackgroundRemover()
                     loaded_models["bg_remover"] = self.bg_remover
 
-
+                logger.info("2=====================")
                 self.paint_pipeline = Hunyuan3DPaintPipeline(conf)
+                logger.info("3=====================")
                 try:
                     self.core_pipe = self.paint_pipeline .models["multiview_model"].pipeline
                     offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
