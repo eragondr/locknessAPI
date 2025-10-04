@@ -292,7 +292,7 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
             # Generate output path
             # base_name = f"{self.model_id}_{image_path.stem}"
             output_path = self.get_parrent_folder(str(image_path))
-            base_name =  f"raw_mesh{image_path.stem}"
+            base_name =  f"raw_mesh_{image_path.stem}"
             mesh_path = self._generate_output_path(base_name, output_format,output_path=output_path)
 
             # Save raw mesh
@@ -494,7 +494,7 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
         super().__init__(*args, **kwargs)
         self.load_shapegen = False  # Don't load shape generation pipeline
         self.load_painting = True  # Only load painting pipeline
-        self.vram_requirement = 12288  # 12GB VRAM for painting only
+        self.vram_requirement = 2288  # 12GB VRAM for painting only
         self.supported_output_formats = ["glb", "obj"]
 
     def _process_request(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
