@@ -146,6 +146,8 @@ echo "[INFO] Installing PyTorch with CUDA 12.8 support..."
 
 #cd ../..
 cd ..
+
+
 echo ""
 echo "Current directory: $(pwd)"
 echo "Installing Hunyuan3D21 Dependencies"
@@ -159,18 +161,20 @@ echo "[INFO] Installing custom rasterizer for Hunyuan3D21..."
 pip install -r requirements-inference.txt
 pip install -r requirements.txt
 pip install bpy==4.0 --extra-index-url https://download.blender.org/pypi/
-pip install boto3==2.49.0
+pip install boto3==1.40.43
 pip install pyglet==2.1.9
 pip install torch-cluster==1.6.3
 pip install easydict==1.13
 pip install lightning==2.5.5
 pip install plyfile==1.1.2
 pip install kiui==0.2.18
-pip install mmgp
+pip install pydantic_settings
+pip install sqlalchemy
 echo "[INFO] Changing directory to hy3dpaint/custom_rasterizer..."
 echo "Current directory: $(pwd)"
 cd hy3dpaint/custom_rasterizer
-pip install -e .
+set DISTUTILS_USE_SDK=1
+pip install -e . --no-build-isolation
 python setup.py install
 if [ $? -eq 0 ]; then
     echo "[SUCCESS] Hunyuan3D21 custom rasterizer installed"
