@@ -414,7 +414,7 @@ def get_default_model_configs() -> Dict[str, Dict[str, Any]]:
             "hunyuan3d_image_mesh_painting": ModelFactory.create_model_config(
                 model_id="hunyuan3d_image_mesh_painting",
                 feature_type="image_mesh_painting",
-                vram_requirement=12288,
+                vram_requirement=2288,
             ),
         }
     )

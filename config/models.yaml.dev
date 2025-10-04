@@ -93,7 +93,7 @@ image_mesh_painting:
     max_workers: 1
 
   hunyuan3d_image_mesh_painting:
-    vram_requirement: 12288  # MB
+    vram_requirement: 2288  # MB
     supported_inputs: ["mesh", "text", "image"]
     supported_outputs: ["glb", "obj"]
     model_path: "thirdparty/Hunyuan3D-2"
