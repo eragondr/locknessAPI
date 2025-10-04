@@ -13,8 +13,8 @@ if [ "$FORCE_DOWNLOAD" = false ] && verify_file "$realesrgan_path" 50000000; the
         print_info "RealESRGAN_x4plus already exists and verified"
     else
         mkdir -p pretrained/tencent/Hunyuan3D21/misc
-        download_with_verify \
-            wget -O "pretrained/tencent/Hunyuan3D21/misc/RealESRGAN_x4plus.pth" "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+        wget -O "pretrained/tencent/Hunyuan3D21/misc/RealESRGAN_x4plus.pth" "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+
     fi
 
 
