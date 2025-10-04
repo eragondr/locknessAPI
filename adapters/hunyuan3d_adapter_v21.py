@@ -164,13 +164,13 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 logger.info("2=====================")
                 self.paint_pipeline = Hunyuan3DPaintPipeline(conf)
                 logger.info("3=====================")
-                try:
-                    self.core_pipe = self.paint_pipeline .models["multiview_model"].pipeline
-                    offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
-                    logger.info("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline")
-                except Exception as e:
-                    logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
-                loaded_models["paint"] = self.paint_pipeline
+                # try:
+                #     self.core_pipe = self.paint_pipeline .models["multiview_model"].pipeline
+                #     offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
+                #     logger.info("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline")
+                # except Exception as e:
+                #     logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
+                # loaded_models["paint"] = self.paint_pipeline
 
             logger.info("Hunyuan3D 2.1 models loaded successfully")
             return loaded_models
