@@ -171,6 +171,10 @@ pip install kiui==0.2.18
 pip install pydantic_settings
 pip install sqlalchemy
 pip install mmgp
+sudo apt install libegl-mesa0
+
+apt update && apt install -y libsm6 libxext6
+apt-get install -y libxrender-dev
 echo "[INFO] Changing directory to hy3dpaint/custom_rasterizer..."
 echo "Current directory: $(pwd)"
 cd hy3dpaint/custom_rasterizer

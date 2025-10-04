@@ -138,7 +138,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 resolution = 512
                 conf = Hunyuan3DPaintConfig(max_num_view, resolution)
                 logger.info("1=====================")
-                conf.device = "cpu"
+                # conf.device = "cpu"
                 conf.realesrgan_ckpt_path = str(
                     self.model_path / "misc" / "RealESRGAN_x4plus.pth"
                 )
