@@ -11,7 +11,7 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
+from mmgp import offload, profile_type
 import torch
 from PIL import Image
 from matplotlib.image import thumbnail
@@ -71,6 +71,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
         self.hunyuan3d_root = Path(hunyuan3d_root)
         self.pipeline_shapegen = None
         self.paint_pipeline = None
+        self.core_pipe =None
         self.bg_remover = None
         self.mesh_processor = MeshProcessor()
         self.path_generator = OutputPathGenerator(base_output_dir="outputs")
@@ -107,10 +108,10 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
             # Load shape generation pipeline if needed
             if self.load_shapegen:
-                from hy3dshape.pipelines import (
+                from thirdparty.Hunyuan3D21.hy3dshape.hy3dshape.pipelines import (
                     Hunyuan3DDiTFlowMatchingPipeline,
                 )
-                from hy3dshape.rembg import BackgroundRemover
+                from thirdparty.Hunyuan3D21.hy3dshape.hy3dshape.rembg import BackgroundRemover
 
                 logger.info("Loading shape generation pipeline...")
                 self.pipeline_shapegen = (
@@ -130,7 +131,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                     Hunyuan3DPaintConfig,
                     Hunyuan3DPaintPipeline,
                 )
-                from hy3dshape.rembg import BackgroundRemover
+                from thirdparty.Hunyuan3D21.hy3dshape.hy3dshape.rembg import BackgroundRemover
 
                 logger.info("Setting up paint pipeline...")
                 max_num_view = 6
@@ -158,6 +159,13 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
 
                 self.paint_pipeline = Hunyuan3DPaintPipeline(conf)
+                try:
+                    self.core_pipe = self.paint_pipeline .models["multiview_model"].pipeline
+                    offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
+                    print("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline")
+                    logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
+                except Exception as e:
+                    logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
                 loaded_models["paint"] = self.paint_pipeline
 
             logger.info("Hunyuan3D 2.1 models loaded successfully")
@@ -536,69 +544,8 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
                 f"Painting mesh with Hunyuan3D 2.1: {mesh_path} using image: {image_path}"
             )
 
-            # Update paint pipeline config
-            # if hasattr(self.paint_pipeline.config, "max_num_view"):
-            #     self.paint_pipeline.config.max_num_view = max_num_view
-            # if hasattr(self.paint_pipeline.config, "resolution"):
-            #     self.paint_pipeline.config.resolution = resolution
-            #
-            # output_path = os.path.dirname(image_path)
-            # # base_name = f"texture_model_{image_path.stem}"
-            # # output_path = self._generate_output_path(base_name, output_format, output_path=output_path)
-            # #
-            # # # Save raw mesh
-            # # final_mesh_path = self.paint_pipeline(
-            # #         str(mesh_path), str(image_path), str(output_path)
-            # #     )
-            # #
-            # # print(final_mesh_path)
-            #
-            # # Generate output path
-            # base_name = f"texture_model_{image_path.stem}"
-            # output_path = self.path_generator.generate_mesh_path(
-            #     str(output_path), base_name, output_format
-            # )
-            # print(str(output_path)+"aaaaaaaaaaaaaaaa")
-            # # Run texture painting
-            # logger.info("Generating texture...")
-            # final_mesh_path = self.paint_pipeline(
-            #     str(mesh_path), str(image_path), str(output_path)
-            # )
-            # print(str(final_mesh_path) + "bbbbbbbbbbbbbbbbbbbbbbbb")
-            # # Ensure the output is at our desired path
-            # if final_mesh_path != str(output_path):
-            #     import shutil
-            #
-            #     shutil.move(final_mesh_path, output_path)
-            #
-            # # Load final mesh for statistics
-            #
-            # if R2Client._instance is None:
-            #     client = R2Client()
-            #     client.upload_folder_to_r2(output_path, r2_base_key=output_path, skip_file=os.path.basename(image_path))
-            # else:
-            #     R2Client._instance.upload_folder_to_r2(output_path, r2_base_key=output_path,
-            #                                            skip_file=os.path.basename(image_path))
-            #
-            # response = {
-            #         "output_mesh_path": str(output_path),
-            #         "success": True,
-            #         "painting_info": {
-            #             "model": self.model_id,
-            #             "input_mesh": str(mesh_path),
-            #             "input_image": str(image_path),
-            #             "output_format": output_format,
-            #             "max_num_view": max_num_view,
-            #             "resolution": resolution,
-            #             "file_url": str(output_path),
-            #             }
-            #         },
-            # old work flow
-            # Generate output path
             base_name = f"texture_model_{image_path.stem}"
-            # output_path = self.path_generator.generate_mesh_path(
-            #     os.path.dirname(image_path), base_name, output_format
-            # )
+
             output_path = self.path_generator.generate_mesh_path(
                 self.get_parrent_folder(str(image_path)), base_name, output_format
             )
