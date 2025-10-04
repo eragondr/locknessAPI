@@ -137,18 +137,13 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 max_num_view = 6
                 resolution = 768
                 conf = Hunyuan3DPaintConfig(max_num_view, resolution)
-
                 conf.device = "cpu"
-
                 conf.realesrgan_ckpt_path = str(
                     self.model_path / "misc" / "RealESRGAN_x4plus.pth"
                 )
                 conf.multiview_cfg_path = str(
                     self.hunyuan3d_root / "hy3dpaint/cfgs/hunyuan-paint-pbr.yaml"
                 )
-                conf.custom_pipeline = "hy3dpaint/hunyuanpaintpbr/pipeline.py"
-
-
                 conf.custom_pipeline = str(
                     self.hunyuan3d_root / "hy3dpaint/hunyuanpaintpbr/pipeline.py"
                 )
