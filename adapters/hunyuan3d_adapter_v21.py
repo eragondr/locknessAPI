@@ -135,23 +135,31 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
                 logger.info("Setting up paint pipeline...")
                 max_num_view = 6
-                resolution = 512
+                resolution = 768
                 conf = Hunyuan3DPaintConfig(max_num_view, resolution)
 
+                conf.device = "cpu"
+
+                conf.realesrgan_ckpt_path = str(
+                    self.model_path / "misc" / "RealESRGAN_x4plus.pth"
+                )
                 conf.multiview_cfg_path = str(
                     self.hunyuan3d_root / "hy3dpaint/cfgs/hunyuan-paint-pbr.yaml"
                 )
+                conf.custom_pipeline = "hy3dpaint/hunyuanpaintpbr/pipeline.py"
+
+
                 conf.custom_pipeline = str(
-                    self.hunyuan3d_root / "hy3dpaint/hunyuanpaintpbr"
+                    self.hunyuan3d_root / "hy3dpaint/hunyuanpaintpbr/pipeline.py"
                 )
+
                 conf.multiview_pretrained_path = str(self.model_path)
+
                 conf.dino_ckpt_path = str(
                     # self.model_path / ".." / ".." / "dinov2-giant"
                     self.model_path / "dinov2-giant"
                 )
-                conf.realesrgan_ckpt_path = str(
-                    self.model_path / "misc" / "RealESRGAN_x4plus.pth"
-                )
+
 
                 if "bg_remover" not in loaded_models:
                     self.bg_remover = BackgroundRemover()
@@ -162,8 +170,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 try:
                     self.core_pipe = self.paint_pipeline .models["multiview_model"].pipeline
                     offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
-                    print("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline")
-                    logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
+                    logger.info("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline")
                 except Exception as e:
                     logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
                 loaded_models["paint"] = self.paint_pipeline
