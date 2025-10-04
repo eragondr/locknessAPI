@@ -1,10 +1,9 @@
 #!/bin/bash
 
 cd ..
-huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21/hunyuan3d-paintpbr-v2-1 --include hunyuan3d-paintpbr-v2-1/*
-huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21/hy3dpaint --include hy3dpaint/*
-huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21/hy3dpaint --include hy3dpaint/*
-huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21/hunyuan3d-vae-v2-1 --include hunyuan3d-vae-v2-1/*
+huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21 --include hunyuan3d-paintpbr-v2-1/*
+huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21 --include hy3dpaint/*
+huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21 --include hunyuan3d-vae-v2-1/*
 local dinov2_dir="pretrained/tencent/Hunyuan3D21/dinov2-giant"
     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$dinov2_dir" 5; then
         print_info "DINOv2-giant model already exists and verified"
