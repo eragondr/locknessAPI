@@ -201,7 +201,8 @@ cd ../..
 echo "[INFO] Installing Hunyuan3D21 requirements..."
 
 ### installation for Hunyuan3D21 end ###
-huggingface-cli login --token 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
+HF_TOKEN="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"
+huggingface-cli login --token $HF_TOKEN
 huggingface-cli download tencent/Hunyuan3D-2.1 --local-dir pretrained/tencent/Hunyuan3D21/hunyuan3d-paintpbr-v2-1 --include hunyuan3d-paintpbr-v2-1/*
 local dinov2_dir="pretrained/tencent/Hunyuan3D21/dinov2-giant"
     if [ "$FORCE_DOWNLOAD" = false ] && verify_directory "$dinov2_dir" 5; then
