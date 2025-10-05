@@ -206,6 +206,7 @@ pip install pydantic_settings
 pip install sqlalchemy
 pip install mmgp
 sudo apt install libegl-mesa0
+pip install pybind11
 
 apt update && apt install -y libsm6 libxext6
 apt-get install -y libxrender-dev
