@@ -126,12 +126,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 self.bg_remover = BackgroundRemover()
                 loaded_models["bg_remover"] = self.bg_remover
 
-            try:
-                self.core_pipe_mesh = self.paint_pipeline.models["multiview_model"].pipeline
-                offload.profile(self.core_pipe_mesh, profile_type.HighRAM_LowVRAM)
-                logger.info("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline")
-            except Exception as e:
-                logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
+
             # Load paint pipeline if needed
             if self.load_painting:
                 from thirdparty.Hunyuan3D21.hy3dpaint.textureGenPipeline import (
@@ -173,7 +168,8 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 logger.info("3=====================")
                 try:
                     self.core_pipe = self.paint_pipeline .models["multiview_model"].pipeline
-                    offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
+                    # offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
+                    offload.profile(self.core_pipe, profile_type.HighRAM_HighVRAM)
                     logger.info("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline")
                 except Exception as e:
                     logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
