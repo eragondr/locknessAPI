@@ -125,6 +125,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 logger.info("Loading background remover...")
                 self.bg_remover = BackgroundRemover()
                 loaded_models["bg_remover"] = self.bg_remover
+
             try:
                 self.core_pipe_mesh = self.paint_pipeline.models["multiview_model"].pipeline
                 offload.profile(self.core_pipe_mesh, profile_type.HighRAM_LowVRAM)
