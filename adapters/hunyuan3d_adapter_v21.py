@@ -137,7 +137,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
 
                 logger.info("Setting up paint pipeline...")
                 max_num_view = 6
-                resolution = 512 # 768  or 512
+                resolution = 768 # 768  or 512
                 conf = Hunyuan3DPaintConfig(max_num_view, resolution)
                 logger.info("1=====================")
                 # conf.device = "cpu"
