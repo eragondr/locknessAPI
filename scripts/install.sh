@@ -27,9 +27,9 @@ if [ -z "$ISMESH" ]; then
     exit 1
 fi
 # Initialize conda
-conda init bash
-#echo "[INFO] Creating conda environment 'locknessapi' with Python 3.10..."
-conda create -n locknessapi python=3.10 -y
+#conda init bash
+##echo "[INFO] Creating conda environment 'locknessapi' with Python 3.10..."
+#conda create -n locknessapi python=3.10 -y
 #if [ $? -eq 0 ]; then
 #    echo "[SUCCESS] Conda environment created successfully"
 #else
@@ -37,9 +37,8 @@ conda create -n locknessapi python=3.10 -y
 #    exit 1
 #fi
 
-echo "[INFO] Activating conda environment..."
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate locknessapi
+
+#conda activate locknessapi
 
 echo "[INFO] Installing PyTorch with CUDA 12.8 support..."
 
@@ -241,6 +240,7 @@ echo "[INFO] Installing Hunyuan3D21 requirements..."
 
 ### installation for Hunyuan3D21 end ###
 echo "[SUCCESS] Hunyuan3D21 installation completed"
+cd ../..
 cd scipts
 if [ "$ISMESH" == "1" ]; then
     bash donwnloadMesh.sh
