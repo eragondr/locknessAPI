@@ -240,8 +240,10 @@ echo "[INFO] Installing Hunyuan3D21 requirements..."
 
 ### installation for Hunyuan3D21 end ###
 echo "[SUCCESS] Hunyuan3D21 installation completed"
+echo "Before directory after cd: $(pwd)"
 cd ../..
 cd scipts
+echo "Current directory after cd: $(pwd)"
 if [ "$ISMESH" == "1" ]; then
     bash donwnloadMesh.sh
 else
