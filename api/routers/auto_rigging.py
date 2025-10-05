@@ -98,84 +98,84 @@ class AutoRigResponse(BaseModel):
     message: str = Field(..., description="Status message")
 
 
-@router.post("/generate-rig", response_model=AutoRigResponse)
-async def generate_rig(
-    request: AutoRigRequest,
-    scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
-):
-    """
-    Generate bone structure for a 3D mesh.
-
-    Args:
-        request: Auto-rigging parameters
-        scheduler: Model scheduler dependency
-
-    Returns:
-        Job information for the auto-rigging task
-    """
-    if request.rig_mode.lower() not in ["skeleton", "skin", "full"]:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid rig mode. Allowed: skeleton, skin, full",
-        )
-
-    try:
-        # Validate model preference
-        validate_model_preference(request.model_preference, "auto_rig", scheduler)
-
-        # Process mesh input
-        mesh_file_path = None
-
-        if request.mesh_file_id:
-            # Handle file ID
-            mesh_file_path = resolve_file_id(request.mesh_file_id)
-            if not mesh_file_path:
-                raise HTTPException(
-                    status_code=404, detail="Mesh file not found or expired"
-                )
-        else:
-            mesh_file_path = request.mesh_path
-
-        # Validate mesh file exists
-        if not mesh_file_path:
-            raise HTTPException(
-                status_code=400, detail="Mesh path or file ID must be provided"
-            )
-
-        # Validate rig type
-        job_request = JobRequest(
-            feature="auto_rig",
-            inputs={
-                "rig_mode": request.rig_mode.lower(),
-                "mesh_path": mesh_file_path,
-                "output_format": request.output_format,
-            },
-            model_preference=request.model_preference,
-            priority=1,
-            metadata={"feature_type": "auto_rig"},
-        )
-
-        job_id = await scheduler.schedule_job(job_request)
-
-        return AutoRigResponse(
-            job_id=job_id,
-            status="queued",
-            message="Auto-rigging job queued successfully",
-        )
-    except HTTPException as e:
-        raise e
-
-    except Exception as e:
-        logger.error(f"Error scheduling auto-rig job: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
-
-
-@router.get("/supported-formats")
-async def get_supported_formats():
-    """
-    Get supported input and output formats for auto-rigging.
-
-    Returns:
-        Dictionary of supported formats
-    """
-    return {"input_formats": ["obj", "glb", "fbx"], "output_formats": ["glb"]}
+# @router.post("/generate-rig", response_model=AutoRigResponse)
+# async def generate_rig(
+#     request: AutoRigRequest,
+#     scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
+# ):
+#     """
+#     Generate bone structure for a 3D mesh.
+#
+#     Args:
+#         request: Auto-rigging parameters
+#         scheduler: Model scheduler dependency
+#
+#     Returns:
+#         Job information for the auto-rigging task
+#     """
+#     if request.rig_mode.lower() not in ["skeleton", "skin", "full"]:
+#         raise HTTPException(
+#             status_code=400,
+#             detail="Invalid rig mode. Allowed: skeleton, skin, full",
+#         )
+#
+#     try:
+#         # Validate model preference
+#         validate_model_preference(request.model_preference, "auto_rig", scheduler)
+#
+#         # Process mesh input
+#         mesh_file_path = None
+#
+#         if request.mesh_file_id:
+#             # Handle file ID
+#             mesh_file_path = resolve_file_id(request.mesh_file_id)
+#             if not mesh_file_path:
+#                 raise HTTPException(
+#                     status_code=404, detail="Mesh file not found or expired"
+#                 )
+#         else:
+#             mesh_file_path = request.mesh_path
+#
+#         # Validate mesh file exists
+#         if not mesh_file_path:
+#             raise HTTPException(
+#                 status_code=400, detail="Mesh path or file ID must be provided"
+#             )
+#
+#         # Validate rig type
+#         job_request = JobRequest(
+#             feature="auto_rig",
+#             inputs={
+#                 "rig_mode": request.rig_mode.lower(),
+#                 "mesh_path": mesh_file_path,
+#                 "output_format": request.output_format,
+#             },
+#             model_preference=request.model_preference,
+#             priority=1,
+#             metadata={"feature_type": "auto_rig"},
+#         )
+#
+#         job_id = await scheduler.schedule_job(job_request)
+#
+#         return AutoRigResponse(
+#             job_id=job_id,
+#             status="queued",
+#             message="Auto-rigging job queued successfully",
+#         )
+#     except HTTPException as e:
+#         raise e
+#
+#     except Exception as e:
+#         logger.error(f"Error scheduling auto-rig job: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
+#
+#
+# @router.get("/supported-formats")
+# async def get_supported_formats():
+#     """
+#     Get supported input and output formats for auto-rigging.
+#
+#     Returns:
+#         Dictionary of supported formats
+#     """
+#     return {"input_formats": ["obj", "glb", "fbx"], "output_formats": ["glb"]}

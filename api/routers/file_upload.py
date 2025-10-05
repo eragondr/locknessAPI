@@ -149,163 +149,163 @@ async def upload_file_with_validation(
         logger.error(f"Failed to upload {file_type} file {file.filename}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
 
-
-@router.post("/image", response_model=FileUploadResponse)
-async def upload_image(
-    file: UploadFile = File(..., description="Image file to upload"),
-):
-    """
-    Upload an image file.
-
-    Returns a unique file ID that can be used in other API endpoints.
-    Supported formats: PNG, JPG, JPEG, WebP, BMP, TIFF
-    """
-    return await upload_file_with_validation(
-        file, "image", SUPPORTED_IMAGE_FORMATS, max_size_mb=50
-    )
-
-
-@router.post("/mesh", response_model=FileUploadResponse)
-async def upload_mesh(file: UploadFile = File(..., description="Mesh file to upload")):
-    """
-    Upload a mesh file.
-
-    Returns a unique file ID that can be used in other API endpoints.
-    Supported formats: GLB, OBJ, FBX, PLY, STL, GLTF
-    """
-    return await upload_file_with_validation(
-        file, "mesh", SUPPORTED_MESH_FORMATS, max_size_mb=200
-    )
-
-
-@router.get("/metadata/{file_id}", response_model=FileMetadataResponse)
-async def get_file_metadata_endpoint(file_id: str):
-    """
-    Get metadata for an uploaded file.
-
-    Args:
-        file_id: Unique file identifier
-
-    Returns:
-        File metadata including availability status
-    """
-    metadata = get_file_metadata(file_id)
-
-    if not metadata:
-        raise HTTPException(status_code=404, detail="File not found")
-
-    # Check if file still exists
-    is_available = metadata["is_available"] and os.path.exists(metadata["file_path"])
-
-    return FileMetadataResponse(
-        file_id=metadata["file_id"],
-        filename=metadata["filename"],
-        file_type=metadata["file_type"],
-        file_size_mb=metadata["file_size_mb"],
-        upload_time=metadata["upload_time"],
-        expires_at=metadata["expires_at"],
-        is_available=is_available,
-    )
-
-
-@router.delete("/{file_id}")
-async def delete_file(file_id: str):
-    """
-    Delete an uploaded file.
-
-    Args:
-        file_id: Unique file identifier
-
-    Returns:
-        Deletion confirmation
-    """
-    metadata = get_file_metadata(file_id)
-
-    if not metadata:
-        raise HTTPException(status_code=404, detail="File not found")
-
-    try:
-        # Remove file from disk
-        if os.path.exists(metadata["file_path"]):
-            os.remove(metadata["file_path"])
-
-        # Mark as unavailable
-        metadata["is_available"] = False
-
-        logger.info(f"Deleted file {file_id}: {metadata['filename']}")
-
-        return {
-            "file_id": file_id,
-            "message": "File deleted successfully",
-            "filename": metadata["filename"],
-        }
-
-    except Exception as e:
-        logger.error(f"Failed to delete file {file_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
-
-
-@router.get("/list")
-async def list_uploaded_files(file_type: Optional[str] = None, limit: int = 100):
-    """
-    List uploaded files.
-
-    Args:
-        file_type: Optional filter by file type (image/mesh)
-        limit: Maximum number of files to return
-
-    Returns:
-        List of uploaded files
-    """
-    files = []
-
-    for metadata in file_metadata.values():
-        if file_type and metadata["file_type"] != file_type:
-            continue
-
-        if len(files) >= limit:
-            break
-
-        files.append(
-            {
-                "file_id": metadata["file_id"],
-                "filename": metadata["filename"],
-                "file_type": metadata["file_type"],
-                "file_size_mb": metadata["file_size_mb"],
-                "upload_time": metadata["upload_time"],
-                "is_available": metadata["is_available"]
-                and os.path.exists(metadata["file_path"]),
-            }
-        )
-
-    return {"files": files, "count": len(files), "total_files": len(file_metadata)}
-
-
-@router.get("/supported-formats")
-async def get_supported_formats():
-    """
-    Get supported file formats for upload.
-
-    Returns:
-        Dictionary of supported formats and limits
-    """
-    return {
-        "image": {
-            "formats": SUPPORTED_IMAGE_FORMATS,
-            "max_size_mb": 50,
-            "description": "Supported image formats for upload",
-        },
-        "mesh": {
-            "formats": SUPPORTED_MESH_FORMATS,
-            "max_size_mb": 200,
-            "description": "Supported mesh formats for upload",
-        },
-        "retention": {
-            "default_hours": 24,
-            "description": "Files are automatically deleted after 24 hours",
-        },
-    }
-
+#
+# @router.post("/image", response_model=FileUploadResponse)
+# async def upload_image(
+#     file: UploadFile = File(..., description="Image file to upload"),
+# ):
+#     """
+#     Upload an image file.
+#
+#     Returns a unique file ID that can be used in other API endpoints.
+#     Supported formats: PNG, JPG, JPEG, WebP, BMP, TIFF
+#     """
+#     return await upload_file_with_validation(
+#         file, "image", SUPPORTED_IMAGE_FORMATS, max_size_mb=50
+#     )
+#
+#
+# @router.post("/mesh", response_model=FileUploadResponse)
+# async def upload_mesh(file: UploadFile = File(..., description="Mesh file to upload")):
+#     """
+#     Upload a mesh file.
+#
+#     Returns a unique file ID that can be used in other API endpoints.
+#     Supported formats: GLB, OBJ, FBX, PLY, STL, GLTF
+#     """
+#     return await upload_file_with_validation(
+#         file, "mesh", SUPPORTED_MESH_FORMATS, max_size_mb=200
+#     )
+#
+#
+# @router.get("/metadata/{file_id}", response_model=FileMetadataResponse)
+# async def get_file_metadata_endpoint(file_id: str):
+#     """
+#     Get metadata for an uploaded file.
+#
+#     Args:
+#         file_id: Unique file identifier
+#
+#     Returns:
+#         File metadata including availability status
+#     """
+#     metadata = get_file_metadata(file_id)
+#
+#     if not metadata:
+#         raise HTTPException(status_code=404, detail="File not found")
+#
+#     # Check if file still exists
+#     is_available = metadata["is_available"] and os.path.exists(metadata["file_path"])
+#
+#     return FileMetadataResponse(
+#         file_id=metadata["file_id"],
+#         filename=metadata["filename"],
+#         file_type=metadata["file_type"],
+#         file_size_mb=metadata["file_size_mb"],
+#         upload_time=metadata["upload_time"],
+#         expires_at=metadata["expires_at"],
+#         is_available=is_available,
+#     )
+#
+#
+# @router.delete("/{file_id}")
+# async def delete_file(file_id: str):
+#     """
+#     Delete an uploaded file.
+#
+#     Args:
+#         file_id: Unique file identifier
+#
+#     Returns:
+#         Deletion confirmation
+#     """
+#     metadata = get_file_metadata(file_id)
+#
+#     if not metadata:
+#         raise HTTPException(status_code=404, detail="File not found")
+#
+#     try:
+#         # Remove file from disk
+#         if os.path.exists(metadata["file_path"]):
+#             os.remove(metadata["file_path"])
+#
+#         # Mark as unavailable
+#         metadata["is_available"] = False
+#
+#         logger.info(f"Deleted file {file_id}: {metadata['filename']}")
+#
+#         return {
+#             "file_id": file_id,
+#             "message": "File deleted successfully",
+#             "filename": metadata["filename"],
+#         }
+#
+#     except Exception as e:
+#         logger.error(f"Failed to delete file {file_id}: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
+#
+#
+# @router.get("/list")
+# async def list_uploaded_files(file_type: Optional[str] = None, limit: int = 100):
+#     """
+#     List uploaded files.
+#
+#     Args:
+#         file_type: Optional filter by file type (image/mesh)
+#         limit: Maximum number of files to return
+#
+#     Returns:
+#         List of uploaded files
+#     """
+#     files = []
+#
+#     for metadata in file_metadata.values():
+#         if file_type and metadata["file_type"] != file_type:
+#             continue
+#
+#         if len(files) >= limit:
+#             break
+#
+#         files.append(
+#             {
+#                 "file_id": metadata["file_id"],
+#                 "filename": metadata["filename"],
+#                 "file_type": metadata["file_type"],
+#                 "file_size_mb": metadata["file_size_mb"],
+#                 "upload_time": metadata["upload_time"],
+#                 "is_available": metadata["is_available"]
+#                 and os.path.exists(metadata["file_path"]),
+#             }
+#         )
+#
+#     return {"files": files, "count": len(files), "total_files": len(file_metadata)}
+#
+#
+# @router.get("/supported-formats")
+# async def get_supported_formats():
+#     """
+#     Get supported file formats for upload.
+#
+#     Returns:
+#         Dictionary of supported formats and limits
+#     """
+#     return {
+#         "image": {
+#             "formats": SUPPORTED_IMAGE_FORMATS,
+#             "max_size_mb": 50,
+#             "description": "Supported image formats for upload",
+#         },
+#         "mesh": {
+#             "formats": SUPPORTED_MESH_FORMATS,
+#             "max_size_mb": 200,
+#             "description": "Supported mesh formats for upload",
+#         },
+#         "retention": {
+#             "default_hours": 24,
+#             "description": "Files are automatically deleted after 24 hours",
+#         },
+#     }
+#
 
 # Utility function to be used by other modules
 def resolve_file_id(file_id: str) -> Optional[str]:

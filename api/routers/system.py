@@ -126,44 +126,44 @@ async def system_status(
     return status
 
 
-@router.get("/models", summary="List available models")
-async def list_models(
-    feature: Optional[str] = None,
-    settings=Depends(get_current_settings),
-    _: bool = Depends(verify_api_key),
-):
-    """List available models, optionally filtered by feature"""
+# @router.get("/models", summary="List available models")
+# async def list_models(
+#     feature: Optional[str] = None,
+#     settings=Depends(get_current_settings),
+#     _: bool = Depends(verify_api_key),
+# ):
+#     """List available models, optionally filtered by feature"""
+#
+#     available_models = settings.list_available_models()
+#
+#     if feature:
+#         if feature in available_models:
+#             return {"feature": feature, "models": available_models[feature]}
+#         else:
+#             raise HTTPException(
+#                 status_code=404, detail=f"Feature '{feature}' not found"
+#             )
+#
+#     return {
+#         "available_models": available_models,
+#         "total_features": len(available_models),
+#         "total_models": sum(len(models) for models in available_models.values()),
+#     }
 
-    available_models = settings.list_available_models()
 
-    if feature:
-        if feature in available_models:
-            return {"feature": feature, "models": available_models[feature]}
-        else:
-            raise HTTPException(
-                status_code=404, detail=f"Feature '{feature}' not found"
-            )
-
-    return {
-        "available_models": available_models,
-        "total_features": len(available_models),
-        "total_models": sum(len(models) for models in available_models.values()),
-    }
-
-
-@router.get("/features", summary="List supported features")
-async def list_features(settings=Depends(get_current_settings)):
-    """List all supported features"""
-    available_models = settings.list_available_models()
-
-    features = []
-    for feature_name, models in available_models.items():
-        features.append(
-            {"name": feature_name, "model_count": len(models), "models": models}
-        )
-
-    return {"features": features, "total_features": len(features)}
-
+# @router.get("/features", summary="List supported features")
+# async def list_features(settings=Depends(get_current_settings)):
+#     """List all supported features"""
+#     available_models = settings.list_available_models()
+#
+#     features = []
+#     for feature_name, models in available_models.items():
+#         features.append(
+#             {"name": feature_name, "model_count": len(models), "models": models}
+#         )
+#
+#     return {"features": features, "total_features": len(features)}
+#
 
 @router.post("/shutdown", summary="Shutdown server")
 async def shutdown_server(_: bool = Depends(verify_api_key)):
@@ -178,109 +178,109 @@ async def shutdown_server(_: bool = Depends(verify_api_key)):
     return {"message": "Server shutdown initiated"}
 
 
-@router.get("/logs", summary="Get recent logs")
-async def get_logs(
-    lines: int = Query(100, description="Number of recent lines to return"),
-    level: Optional[str] = Query(
-        None, description="Filter by log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
-    ),
-    logger_name: Optional[str] = Query(None, description="Filter by logger name"),
-    since: Optional[str] = Query(
-        None, description="Filter logs since timestamp (ISO format)"
-    ),
-    _: bool = Depends(verify_api_key),
-):
-    """Get recent log entries from log files"""
-
-    try:
-        logs_dir = Path("logs")
-        if not logs_dir.exists():
-            return {
-                "error": "Logs directory not found",
-                "message": "Logging may not be properly configured",
-                "logs": [],
-            }
-
-        # Find log files
-        log_files = list(logs_dir.glob("*.log"))
-        if not log_files:
-            return {"message": "No log files found", "logs": [], "available_files": []}
-
-        # Get the most recent log file (app.log by default)
-        main_log_file = logs_dir / "app.log"
-        if not main_log_file.exists() and log_files:
-            main_log_file = log_files[0]
-
-        if not main_log_file.exists():
-            return {
-                "error": "Main log file not found",
-                "available_files": [f.name for f in log_files],
-                "logs": [],
-            }
-
-        # Read log file
-        log_entries = []
-        try:
-            with open(main_log_file, "r", encoding="utf-8") as f:
-                # Read last 'lines' number of lines efficiently
-                file_lines = f.readlines()
-                recent_lines = (
-                    file_lines[-lines:] if len(file_lines) > lines else file_lines
-                )
-
-                for line in recent_lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-
-                    # Parse log entry
-                    log_entry = _parse_log_line(line)
-
-                    # Apply filters
-                    if level and log_entry.get("level") != level.upper():
-                        continue
-
-                    if logger_name and logger_name not in log_entry.get("logger", ""):
-                        continue
-
-                    if since:
-                        try:
-                            from datetime import datetime
-
-                            entry_time = datetime.fromisoformat(
-                                log_entry.get("timestamp", "")
-                            )
-                            since_time = datetime.fromisoformat(since)
-                            if entry_time < since_time:
-                                continue
-                        except (ValueError, TypeError):
-                            pass  # Skip time filtering if parsing fails
-
-                    log_entries.append(log_entry)
-
-        except Exception as e:
-            return {
-                "error": f"Failed to read log file: {str(e)}",
-                "logs": [],
-                "file": str(main_log_file),
-            }
-
-        return {
-            "logs": log_entries,
-            "total_entries": len(log_entries),
-            "file": str(main_log_file),
-            "available_files": [f.name for f in log_files],
-            "filters_applied": {
-                "lines": lines,
-                "level": level,
-                "logger_name": logger_name,
-                "since": since,
-            },
-        }
-
-    except Exception as e:
-        logger.error(f"Error retrieving logs: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving logs: {str(e)}")
+# @router.get("/logs", summary="Get recent logs")
+# async def get_logs(
+#     lines: int = Query(100, description="Number of recent lines to return"),
+#     level: Optional[str] = Query(
+#         None, description="Filter by log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+#     ),
+#     logger_name: Optional[str] = Query(None, description="Filter by logger name"),
+#     since: Optional[str] = Query(
+#         None, description="Filter logs since timestamp (ISO format)"
+#     ),
+#     _: bool = Depends(verify_api_key),
+# ):
+#     """Get recent log entries from log files"""
+#
+#     try:
+#         logs_dir = Path("logs")
+#         if not logs_dir.exists():
+#             return {
+#                 "error": "Logs directory not found",
+#                 "message": "Logging may not be properly configured",
+#                 "logs": [],
+#             }
+#
+#         # Find log files
+#         log_files = list(logs_dir.glob("*.log"))
+#         if not log_files:
+#             return {"message": "No log files found", "logs": [], "available_files": []}
+#
+#         # Get the most recent log file (app.log by default)
+#         main_log_file = logs_dir / "app.log"
+#         if not main_log_file.exists() and log_files:
+#             main_log_file = log_files[0]
+#
+#         if not main_log_file.exists():
+#             return {
+#                 "error": "Main log file not found",
+#                 "available_files": [f.name for f in log_files],
+#                 "logs": [],
+#             }
+#
+#         # Read log file
+#         log_entries = []
+#         try:
+#             with open(main_log_file, "r", encoding="utf-8") as f:
+#                 # Read last 'lines' number of lines efficiently
+#                 file_lines = f.readlines()
+#                 recent_lines = (
+#                     file_lines[-lines:] if len(file_lines) > lines else file_lines
+#                 )
+#
+#                 for line in recent_lines:
+#                     line = line.strip()
+#                     if not line:
+#                         continue
+#
+#                     # Parse log entry
+#                     log_entry = _parse_log_line(line)
+#
+#                     # Apply filters
+#                     if level and log_entry.get("level") != level.upper():
+#                         continue
+#
+#                     if logger_name and logger_name not in log_entry.get("logger", ""):
+#                         continue
+#
+#                     if since:
+#                         try:
+#                             from datetime import datetime
+#
+#                             entry_time = datetime.fromisoformat(
+#                                 log_entry.get("timestamp", "")
+#                             )
+#                             since_time = datetime.fromisoformat(since)
+#                             if entry_time < since_time:
+#                                 continue
+#                         except (ValueError, TypeError):
+#                             pass  # Skip time filtering if parsing fails
+#
+#                     log_entries.append(log_entry)
+#
+#         except Exception as e:
+#             return {
+#                 "error": f"Failed to read log file: {str(e)}",
+#                 "logs": [],
+#                 "file": str(main_log_file),
+#             }
+#
+#         return {
+#             "logs": log_entries,
+#             "total_entries": len(log_entries),
+#             "file": str(main_log_file),
+#             "available_files": [f.name for f in log_files],
+#             "filters_applied": {
+#                 "lines": lines,
+#                 "level": level,
+#                 "logger_name": logger_name,
+#                 "since": since,
+#             },
+#         }
+#
+#     except Exception as e:
+#         logger.error(f"Error retrieving logs: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Error retrieving logs: {str(e)}")
 
 
 def _parse_log_line(line: str) -> dict:
@@ -323,160 +323,160 @@ def _parse_log_line(line: str) -> dict:
         }
 
 
-@router.get("/logs/files", summary="List available log files")
-async def list_log_files(_: bool = Depends(verify_api_key)):
-    """List all available log files"""
-    try:
-        logs_dir = Path("logs")
-        if not logs_dir.exists():
-            return {"files": [], "message": "Logs directory not found"}
-
-        log_files = []
-        for log_file in logs_dir.glob("*.log"):
-            try:
-                stat = log_file.stat()
-                log_files.append(
-                    {
-                        "name": log_file.name,
-                        "path": str(log_file),
-                        "size_bytes": stat.st_size,
-                        "size_mb": round(stat.st_size / (1024 * 1024), 2),
-                        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                        "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
-                    }
-                )
-            except Exception as e:
-                log_files.append(
-                    {
-                        "name": log_file.name,
-                        "path": str(log_file),
-                        "error": f"Could not read file stats: {str(e)}",
-                    }
-                )
-
-        return {
-            "files": sorted(
-                log_files, key=lambda x: x.get("modified", ""), reverse=True
-            ),
-            "total_files": len(log_files),
-        }
-
-    except Exception as e:
-        logger.error(f"Error listing log files: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error listing log files: {str(e)}"
-        )
-
-
-@router.get("/logs/files/{filename}", summary="Get specific log file")
-async def get_log_file(
-    filename: str,
-    lines: int = Query(100, description="Number of recent lines to return"),
-    _: bool = Depends(verify_api_key),
-):
-    """Get contents of a specific log file"""
-    try:
-        logs_dir = Path("logs")
-        log_file = logs_dir / filename
-
-        # Security check - ensure the file is within logs directory
-        if not str(log_file.resolve()).startswith(str(logs_dir.resolve())):
-            raise HTTPException(status_code=400, detail="Invalid file path")
-
-        if not log_file.exists():
-            raise HTTPException(
-                status_code=404, detail=f"Log file '{filename}' not found"
-            )
-
-        if not log_file.suffix == ".log":
-            raise HTTPException(status_code=400, detail="Only .log files are allowed")
-
-        log_entries = []
-        try:
-            with open(log_file, "r", encoding="utf-8") as f:
-                file_lines = f.readlines()
-                recent_lines = (
-                    file_lines[-lines:] if len(file_lines) > lines else file_lines
-                )
-
-                for line in recent_lines:
-                    line = line.strip()
-                    if line:
-                        log_entries.append(_parse_log_line(line))
-
-        except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"Failed to read log file: {str(e)}"
-            )
-
-        # Get file stats
-        stat = log_file.stat()
-
-        return {
-            "filename": filename,
-            "logs": log_entries,
-            "total_entries": len(log_entries),
-            "file_info": {
-                "size_bytes": stat.st_size,
-                "size_mb": round(stat.st_size / (1024 * 1024), 2),
-                "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                "lines_requested": lines,
-                "total_lines_in_file": len(file_lines)
-                if "file_lines" in locals()
-                else 0,
-            },
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error reading log file {filename}: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error reading log file: {str(e)}")
+# @router.get("/logs/files", summary="List available log files")
+# async def list_log_files(_: bool = Depends(verify_api_key)):
+#     """List all available log files"""
+#     try:
+#         logs_dir = Path("logs")
+#         if not logs_dir.exists():
+#             return {"files": [], "message": "Logs directory not found"}
+#
+#         log_files = []
+#         for log_file in logs_dir.glob("*.log"):
+#             try:
+#                 stat = log_file.stat()
+#                 log_files.append(
+#                     {
+#                         "name": log_file.name,
+#                         "path": str(log_file),
+#                         "size_bytes": stat.st_size,
+#                         "size_mb": round(stat.st_size / (1024 * 1024), 2),
+#                         "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+#                         "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+#                     }
+#                 )
+#             except Exception as e:
+#                 log_files.append(
+#                     {
+#                         "name": log_file.name,
+#                         "path": str(log_file),
+#                         "error": f"Could not read file stats: {str(e)}",
+#                     }
+#                 )
+#
+#         return {
+#             "files": sorted(
+#                 log_files, key=lambda x: x.get("modified", ""), reverse=True
+#             ),
+#             "total_files": len(log_files),
+#         }
+#
+#     except Exception as e:
+#         logger.error(f"Error listing log files: {str(e)}")
+#         raise HTTPException(
+#             status_code=500, detail=f"Error listing log files: {str(e)}"
+#         )
 
 
-@router.delete("/logs/files/{filename}", summary="Delete log file")
-async def delete_log_file(filename: str, _: bool = Depends(verify_api_key)):
-    """Delete a specific log file (admin only)"""
-    try:
-        logs_dir = Path("logs")
-        log_file = logs_dir / filename
+# @router.get("/logs/files/{filename}", summary="Get specific log file")
+# async def get_log_file(
+#     filename: str,
+#     lines: int = Query(100, description="Number of recent lines to return"),
+#     _: bool = Depends(verify_api_key),
+# ):
+#     """Get contents of a specific log file"""
+#     try:
+#         logs_dir = Path("logs")
+#         log_file = logs_dir / filename
+#
+#         # Security check - ensure the file is within logs directory
+#         if not str(log_file.resolve()).startswith(str(logs_dir.resolve())):
+#             raise HTTPException(status_code=400, detail="Invalid file path")
+#
+#         if not log_file.exists():
+#             raise HTTPException(
+#                 status_code=404, detail=f"Log file '{filename}' not found"
+#             )
+#
+#         if not log_file.suffix == ".log":
+#             raise HTTPException(status_code=400, detail="Only .log files are allowed")
+#
+#         log_entries = []
+#         try:
+#             with open(log_file, "r", encoding="utf-8") as f:
+#                 file_lines = f.readlines()
+#                 recent_lines = (
+#                     file_lines[-lines:] if len(file_lines) > lines else file_lines
+#                 )
+#
+#                 for line in recent_lines:
+#                     line = line.strip()
+#                     if line:
+#                         log_entries.append(_parse_log_line(line))
+#
+#         except Exception as e:
+#             raise HTTPException(
+#                 status_code=500, detail=f"Failed to read log file: {str(e)}"
+#             )
+#
+#         # Get file stats
+#         stat = log_file.stat()
+#
+#         return {
+#             "filename": filename,
+#             "logs": log_entries,
+#             "total_entries": len(log_entries),
+#             "file_info": {
+#                 "size_bytes": stat.st_size,
+#                 "size_mb": round(stat.st_size / (1024 * 1024), 2),
+#                 "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+#                 "lines_requested": lines,
+#                 "total_lines_in_file": len(file_lines)
+#                 if "file_lines" in locals()
+#                 else 0,
+#             },
+#         }
+#
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"Error reading log file {filename}: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Error reading log file: {str(e)}")
 
-        # Security check
-        if not str(log_file.resolve()).startswith(str(logs_dir.resolve())):
-            raise HTTPException(status_code=400, detail="Invalid file path")
 
-        if not log_file.exists():
-            raise HTTPException(
-                status_code=404, detail=f"Log file '{filename}' not found"
-            )
-
-        if not log_file.suffix == ".log":
-            raise HTTPException(
-                status_code=400, detail="Only .log files can be deleted"
-            )
-
-        # Don't allow deletion of the main app.log while the server is running
-        if filename == "app.log":
-            raise HTTPException(
-                status_code=400,
-                detail="Cannot delete main application log file while server is running",
-            )
-
-        log_file.unlink()
-
-        return {
-            "message": f"Log file '{filename}' deleted successfully",
-            "deleted_file": filename,
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error deleting log file {filename}: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error deleting log file: {str(e)}"
-        )
-
+# @router.delete("/logs/files/{filename}", summary="Delete log file")
+# async def delete_log_file(filename: str, _: bool = Depends(verify_api_key)):
+#     """Delete a specific log file (admin only)"""
+#     try:
+#         logs_dir = Path("logs")
+#         log_file = logs_dir / filename
+#
+#         # Security check
+#         if not str(log_file.resolve()).startswith(str(logs_dir.resolve())):
+#             raise HTTPException(status_code=400, detail="Invalid file path")
+#
+#         if not log_file.exists():
+#             raise HTTPException(
+#                 status_code=404, detail=f"Log file '{filename}' not found"
+#             )
+#
+#         if not log_file.suffix == ".log":
+#             raise HTTPException(
+#                 status_code=400, detail="Only .log files can be deleted"
+#             )
+#
+#         # Don't allow deletion of the main app.log while the server is running
+#         if filename == "app.log":
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail="Cannot delete main application log file while server is running",
+#             )
+#
+#         log_file.unlink()
+#
+#         return {
+#             "message": f"Log file '{filename}' deleted successfully",
+#             "deleted_file": filename,
+#         }
+#
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"Error deleting log file {filename}: {str(e)}")
+#         raise HTTPException(
+#             status_code=500, detail=f"Error deleting log file: {str(e)}"
+#         )
+#
 
 @router.get("/scheduler-status", summary="Get scheduler status")
 async def get_scheduler_status(request: Request):
@@ -712,39 +712,39 @@ async def get_job_status(job_id: str, request: Request):
         )
 
 
-@router.get("/adapters", summary="List registered adapters")
-async def list_adapters(request: Request):
-    """List all registered model adapters"""
-    try:
-        scheduler = await get_scheduler(request)
-        status = await scheduler.get_system_status()
-
-        adapters = []
-        for model_id, model_info in status.get("models", {}).items():
-            adapters.append(
-                {
-                    "model_id": model_id,
-                    "feature_type": model_info.get("feature_type"),
-                    "status": model_info.get("status"),
-                    "vram_requirement": model_info.get("vram_requirement"),
-                    "processing_count": model_info.get("processing_count", 0),
-                    "supported_formats": model_info.get("supported_formats", {}),
-                }
-            )
-
-        return {
-            "adapters": adapters,
-            "total_count": len(adapters),
-            "by_feature": status.get("features", {}),
-            "by_status": {
-                "loaded": len([a for a in adapters if a["status"] == "loaded"]),
-                "unloaded": len([a for a in adapters if a["status"] == "unloaded"]),
-                "loading": len([a for a in adapters if a["status"] == "loading"]),
-                "error": len([a for a in adapters if a["status"] == "error"]),
-            },
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error listing adapters: {str(e)}")
+# @router.get("/adapters", summary="List registered adapters")
+# async def list_adapters(request: Request):
+#     """List all registered model adapters"""
+#     try:
+#         scheduler = await get_scheduler(request)
+#         status = await scheduler.get_system_status()
+#
+#         adapters = []
+#         for model_id, model_info in status.get("models", {}).items():
+#             adapters.append(
+#                 {
+#                     "model_id": model_id,
+#                     "feature_type": model_info.get("feature_type"),
+#                     "status": model_info.get("status"),
+#                     "vram_requirement": model_info.get("vram_requirement"),
+#                     "processing_count": model_info.get("processing_count", 0),
+#                     "supported_formats": model_info.get("supported_formats", {}),
+#                 }
+#             )
+#
+#         return {
+#             "adapters": adapters,
+#             "total_count": len(adapters),
+#             "by_feature": status.get("features", {}),
+#             "by_status": {
+#                 "loaded": len([a for a in adapters if a["status"] == "loaded"]),
+#                 "unloaded": len([a for a in adapters if a["status"] == "unloaded"]),
+#                 "loading": len([a for a in adapters if a["status"] == "loading"]),
+#                 "error": len([a for a in adapters if a["status"] == "error"]),
+#             },
+#         }
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Error listing adapters: {str(e)}")
 
 
 def get_content_type_for_file(file_path: str) -> str:
@@ -778,225 +778,225 @@ def get_content_type_for_file(file_path: str) -> str:
     return mime_type or "application/octet-stream"
 
 
-@router.get("/jobs/{job_id}/download", summary="Download job result")
-async def download_job_result(
-    job_id: str,
-    request: Request,
-    format: Optional[str] = Query(
-        None, description="Response format: 'file' (default) or 'base64'"
-    ),
-    filename: Optional[str] = Query(None, description="Custom filename for download"),
-):
-    """
-    Download the result file of a completed job.
+# @router.get("/jobs/{job_id}/download", summary="Download job result")
+# async def download_job_result(
+#     job_id: str,
+#     request: Request,
+#     format: Optional[str] = Query(
+#         None, description="Response format: 'file' (default) or 'base64'"
+#     ),
+#     filename: Optional[str] = Query(None, description="Custom filename for download"),
+# ):
+#     """
+#     Download the result file of a completed job.
+#
+#     Args:
+#         job_id: The job ID to download results for
+#         format: Response format ('file' for direct download, 'base64' for JSON response)
+#         filename: Optional custom filename for the download
+#
+#     Returns:
+#         FileResponse for direct download or JSON with base64 data
+#     """
+#     try:
+#         scheduler = await get_scheduler(request)
+#         job_status = await scheduler.get_job_status(job_id)
+#
+#         if job_status is None:
+#             raise HTTPException(status_code=404, detail="Job not found")
+#
+#         if job_status.get("status") != "completed":
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail=f"Job is not completed yet. Current status: {job_status.get('status')}",
+#             )
+#
+#         result = job_status.get("result", {})
+#         if not result:
+#             raise HTTPException(
+#                 status_code=404, detail="No result available for this job"
+#             )
+#
+#         # Find the output file path - try multiple possible keys
+#         output_path = None
+#         possible_keys = ["output_mesh_path", "mesh_path", "output_path", "file_path"]
+#
+#         for key in possible_keys:
+#             if key in result and result[key]:
+#                 output_path = result[key]
+#                 break
+#
+#         if not output_path:
+#             raise HTTPException(
+#                 status_code=404, detail="No output file path found in job result"
+#             )
+#
+#         if not os.path.exists(output_path):
+#             raise HTTPException(
+#                 status_code=404, detail=f"Output file not found at path: {output_path}"
+#             )
+#
+#         # Determine the response format
+#         response_format = format or "file"
+#
+#         if response_format == "base64":
+#             # Return base64 encoded data
+#             try:
+#                 # Note: encode_file_to_base64 may have type issues, but implementation works
+#                 base64_data = encode_file_to_base64(output_path)  # type: ignore
+#                 file_size_mb = get_file_size_mb(output_path)
+#
+#                 return JSONResponse(
+#                     {
+#                         "job_id": job_id,
+#                         "filename": filename or os.path.basename(output_path),
+#                         "content_type": get_content_type_for_file(output_path),
+#                         "file_size_mb": file_size_mb,
+#                         "base64_data": base64_data,
+#                         "generation_info": result.get("generation_info", {}),
+#                         "download_time": datetime.utcnow().isoformat(),
+#                     }
+#                 )
+#             except Exception as e:
+#                 raise HTTPException(
+#                     status_code=500, detail=f"Failed to encode file as base64: {str(e)}"
+#                 )
+#
+#         else:
+#             # Return file download
+#             download_filename = (
+#                 filename or f"result_{job_id}_{os.path.basename(output_path)}"
+#             )
+#             content_type = get_content_type_for_file(output_path)
+#
+#             return FileResponse(
+#                 path=output_path,
+#                 filename=download_filename,
+#                 media_type=content_type,
+#                 headers={
+#                     "X-Job-ID": job_id,
+#                     "X-Generation-Time": result.get("generation_info", {}).get(
+#                         "generation_time", "unknown"
+#                     ),
+#                     "X-File-Size": str(os.path.getsize(output_path)),
+#                 },
+#             )
+#
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Error downloading file: {str(e)}")
 
-    Args:
-        job_id: The job ID to download results for
-        format: Response format ('file' for direct download, 'base64' for JSON response)
-        filename: Optional custom filename for the download
 
-    Returns:
-        FileResponse for direct download or JSON with base64 data
-    """
-    try:
-        scheduler = await get_scheduler(request)
-        job_status = await scheduler.get_job_status(job_id)
-
-        if job_status is None:
-            raise HTTPException(status_code=404, detail="Job not found")
-
-        if job_status.get("status") != "completed":
-            raise HTTPException(
-                status_code=400,
-                detail=f"Job is not completed yet. Current status: {job_status.get('status')}",
-            )
-
-        result = job_status.get("result", {})
-        if not result:
-            raise HTTPException(
-                status_code=404, detail="No result available for this job"
-            )
-
-        # Find the output file path - try multiple possible keys
-        output_path = None
-        possible_keys = ["output_mesh_path", "mesh_path", "output_path", "file_path"]
-
-        for key in possible_keys:
-            if key in result and result[key]:
-                output_path = result[key]
-                break
-
-        if not output_path:
-            raise HTTPException(
-                status_code=404, detail="No output file path found in job result"
-            )
-
-        if not os.path.exists(output_path):
-            raise HTTPException(
-                status_code=404, detail=f"Output file not found at path: {output_path}"
-            )
-
-        # Determine the response format
-        response_format = format or "file"
-
-        if response_format == "base64":
-            # Return base64 encoded data
-            try:
-                # Note: encode_file_to_base64 may have type issues, but implementation works
-                base64_data = encode_file_to_base64(output_path)  # type: ignore
-                file_size_mb = get_file_size_mb(output_path)
-
-                return JSONResponse(
-                    {
-                        "job_id": job_id,
-                        "filename": filename or os.path.basename(output_path),
-                        "content_type": get_content_type_for_file(output_path),
-                        "file_size_mb": file_size_mb,
-                        "base64_data": base64_data,
-                        "generation_info": result.get("generation_info", {}),
-                        "download_time": datetime.utcnow().isoformat(),
-                    }
-                )
-            except Exception as e:
-                raise HTTPException(
-                    status_code=500, detail=f"Failed to encode file as base64: {str(e)}"
-                )
-
-        else:
-            # Return file download
-            download_filename = (
-                filename or f"result_{job_id}_{os.path.basename(output_path)}"
-            )
-            content_type = get_content_type_for_file(output_path)
-
-            return FileResponse(
-                path=output_path,
-                filename=download_filename,
-                media_type=content_type,
-                headers={
-                    "X-Job-ID": job_id,
-                    "X-Generation-Time": result.get("generation_info", {}).get(
-                        "generation_time", "unknown"
-                    ),
-                    "X-File-Size": str(os.path.getsize(output_path)),
-                },
-            )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error downloading file: {str(e)}")
-
-
-@router.get("/jobs/{job_id}/thumbnail", summary="Download job thumbnail")
-async def download_job_thumbnail(
-    job_id: str,
-    request: Request,
-    format: Optional[str] = Query(
-        None, description="Response format: 'file' (default) or 'base64'"
-    ),
-    filename: Optional[str] = Query(None, description="Custom filename for download"),
-):
-    """
-    Download the thumbnail image of a completed job.
-
-    Args:
-        job_id: The job ID to download thumbnail for
-        format: Response format ('file' for direct download, 'base64' for JSON response)
-        filename: Optional custom filename for the download
-
-    Returns:
-        FileResponse for direct download or JSON with base64 data
-    """
-    try:
-        scheduler = await get_scheduler(request)
-        job_status = await scheduler.get_job_status(job_id)
-
-        if job_status is None:
-            raise HTTPException(status_code=404, detail="Job not found")
-
-        if job_status.get("status") != "completed":
-            raise HTTPException(
-                status_code=400,
-                detail=f"Job is not completed yet. Current status: {job_status.get('status')}",
-            )
-
-        result = job_status.get("result", {})
-        if not result:
-            raise HTTPException(
-                status_code=404, detail="No result available for this job"
-            )
-
-        # Get thumbnail path
-        thumbnail_path = result.get("thumbnail_path")
-        if not thumbnail_path:
-            raise HTTPException(
-                status_code=404, detail="No thumbnail available for this job"
-            )
-
-        if not os.path.exists(thumbnail_path):
-            raise HTTPException(
-                status_code=404,
-                detail=f"Thumbnail file not found at path: {thumbnail_path}",
-            )
-
-        # Determine the response format
-        response_format = format or "file"
-
-        if response_format == "base64":
-            # Return base64 encoded data
-            try:
-                base64_data = encode_file_to_base64(thumbnail_path)  # type: ignore
-                file_size_mb = get_file_size_mb(thumbnail_path)
-
-                return JSONResponse(
-                    {
-                        "job_id": job_id,
-                        "filename": filename or os.path.basename(thumbnail_path),
-                        "content_type": get_content_type_for_file(thumbnail_path),
-                        "file_size_mb": file_size_mb,
-                        "base64_data": base64_data,
-                        "generation_info": result.get("generation_info", {}),
-                        "download_time": datetime.utcnow().isoformat(),
-                    }
-                )
-            except Exception as e:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Failed to encode thumbnail as base64: {str(e)}",
-                )
-
-        else:
-            # Return file download
-            download_filename = (
-                filename or f"thumbnail_{job_id}_{os.path.basename(thumbnail_path)}"
-            )
-            content_type = get_content_type_for_file(thumbnail_path)
-
-            return FileResponse(
-                path=thumbnail_path,
-                filename=download_filename,
-                media_type=content_type,
-                headers={
-                    "X-Job-ID": job_id,
-                    "X-Thumbnail-Generated": str(
-                        result.get("generation_info", {}).get(
-                            "thumbnail_generated", "unknown"
-                        )
-                    ),
-                    "X-File-Size": str(os.path.getsize(thumbnail_path)),
-                },
-            )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        import traceback
-
-        traceback.print_exc()
-        raise HTTPException(
-            status_code=500, detail=f"Error downloading thumbnail: {str(e)}"
-        )
+# @router.get("/jobs/{job_id}/thumbnail", summary="Download job thumbnail")
+# async def download_job_thumbnail(
+#     job_id: str,
+#     request: Request,
+#     format: Optional[str] = Query(
+#         None, description="Response format: 'file' (default) or 'base64'"
+#     ),
+#     filename: Optional[str] = Query(None, description="Custom filename for download"),
+# ):
+#     """
+#     Download the thumbnail image of a completed job.
+#
+#     Args:
+#         job_id: The job ID to download thumbnail for
+#         format: Response format ('file' for direct download, 'base64' for JSON response)
+#         filename: Optional custom filename for the download
+#
+#     Returns:
+#         FileResponse for direct download or JSON with base64 data
+#     """
+#     try:
+#         scheduler = await get_scheduler(request)
+#         job_status = await scheduler.get_job_status(job_id)
+#
+#         if job_status is None:
+#             raise HTTPException(status_code=404, detail="Job not found")
+#
+#         if job_status.get("status") != "completed":
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail=f"Job is not completed yet. Current status: {job_status.get('status')}",
+#             )
+#
+#         result = job_status.get("result", {})
+#         if not result:
+#             raise HTTPException(
+#                 status_code=404, detail="No result available for this job"
+#             )
+#
+#         # Get thumbnail path
+#         thumbnail_path = result.get("thumbnail_path")
+#         if not thumbnail_path:
+#             raise HTTPException(
+#                 status_code=404, detail="No thumbnail available for this job"
+#             )
+#
+#         if not os.path.exists(thumbnail_path):
+#             raise HTTPException(
+#                 status_code=404,
+#                 detail=f"Thumbnail file not found at path: {thumbnail_path}",
+#             )
+#
+#         # Determine the response format
+#         response_format = format or "file"
+#
+#         if response_format == "base64":
+#             # Return base64 encoded data
+#             try:
+#                 base64_data = encode_file_to_base64(thumbnail_path)  # type: ignore
+#                 file_size_mb = get_file_size_mb(thumbnail_path)
+#
+#                 return JSONResponse(
+#                     {
+#                         "job_id": job_id,
+#                         "filename": filename or os.path.basename(thumbnail_path),
+#                         "content_type": get_content_type_for_file(thumbnail_path),
+#                         "file_size_mb": file_size_mb,
+#                         "base64_data": base64_data,
+#                         "generation_info": result.get("generation_info", {}),
+#                         "download_time": datetime.utcnow().isoformat(),
+#                     }
+#                 )
+#             except Exception as e:
+#                 raise HTTPException(
+#                     status_code=500,
+#                     detail=f"Failed to encode thumbnail as base64: {str(e)}",
+#                 )
+#
+#         else:
+#             # Return file download
+#             download_filename = (
+#                 filename or f"thumbnail_{job_id}_{os.path.basename(thumbnail_path)}"
+#             )
+#             content_type = get_content_type_for_file(thumbnail_path)
+#
+#             return FileResponse(
+#                 path=thumbnail_path,
+#                 filename=download_filename,
+#                 media_type=content_type,
+#                 headers={
+#                     "X-Job-ID": job_id,
+#                     "X-Thumbnail-Generated": str(
+#                         result.get("generation_info", {}).get(
+#                             "thumbnail_generated", "unknown"
+#                         )
+#                     ),
+#                     "X-File-Size": str(os.path.getsize(thumbnail_path)),
+#                 },
+#             )
+#
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         import traceback
+#
+#         traceback.print_exc()
+#         raise HTTPException(
+#             status_code=500, detail=f"Error downloading thumbnail: {str(e)}"
+#         )
 
 
 @router.get("/jobs/{job_id}/info", summary="Get job result information")
@@ -1193,47 +1193,47 @@ async def get_supported_formats():
         },
     }
 
-
-@router.get("/available-adapters", summary="List available adapters from registry")
-async def list_available_adapters(request: Request):
-    """
-    List all available adapters from the adapter registry.
-    This provides more accurate information than the /models endpoint
-    which only uses the models.yaml configuration.
-    """
-    try:
-        scheduler = await get_scheduler(request)
-
-        # Get adapter information from scheduler
-        status = await scheduler.get_system_status()
-
-        # Group adapters by feature type
-        features = {}
-        for model_id, model_info in status.get("models", {}).items():
-            feature_type = model_info.get("feature_type")
-            if feature_type:
-                if feature_type not in features:
-                    features[feature_type] = []
-                features[feature_type].append(
-                    {
-                        "model_id": model_id,
-                        "status": model_info.get("status"),
-                        "vram_requirement": model_info.get("vram_requirement"),
-                        "supported_formats": model_info.get("supported_formats", {}),
-                    }
-                )
-
-        return {
-            "features": features,
-            "total_adapters": len(status.get("models", {})),
-            "total_features": len(features),
-        }
-    except Exception as e:
-        logger.error(f"Error retrieving adapter information: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error retrieving adapter information: {str(e)}"
-        )
-
+#
+# @router.get("/available-adapters", summary="List available adapters from registry")
+# async def list_available_adapters(request: Request):
+#     """
+#     List all available adapters from the adapter registry.
+#     This provides more accurate information than the /models endpoint
+#     which only uses the models.yaml configuration.
+#     """
+#     try:
+#         scheduler = await get_scheduler(request)
+#
+#         # Get adapter information from scheduler
+#         status = await scheduler.get_system_status()
+#
+#         # Group adapters by feature type
+#         features = {}
+#         for model_id, model_info in status.get("models", {}).items():
+#             feature_type = model_info.get("feature_type")
+#             if feature_type:
+#                 if feature_type not in features:
+#                     features[feature_type] = []
+#                 features[feature_type].append(
+#                     {
+#                         "model_id": model_id,
+#                         "status": model_info.get("status"),
+#                         "vram_requirement": model_info.get("vram_requirement"),
+#                         "supported_formats": model_info.get("supported_formats", {}),
+#                     }
+#                 )
+#
+#         return {
+#             "features": features,
+#             "total_adapters": len(status.get("models", {})),
+#             "total_features": len(features),
+#         }
+#     except Exception as e:
+#         logger.error(f"Error retrieving adapter information: {str(e)}")
+#         raise HTTPException(
+#             status_code=500, detail=f"Error retrieving adapter information: {str(e)}"
+#         )
+#
 
 @router.get("/logs/config", summary="Get logging configuration")
 async def get_logging_config(_: bool = Depends(verify_api_key)):
