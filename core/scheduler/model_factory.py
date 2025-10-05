@@ -404,7 +404,7 @@ def get_default_model_configs() -> Dict[str, Dict[str, Any]]:
             "hunyuan3d_image_to_raw_mesh": ModelFactory.create_model_config(
                 model_id="hunyuan3d_image_to_raw_mesh",
                 feature_type="image_to_raw_mesh",
-                vram_requirement=8192,
+                vram_requirement=192,
             ),
             "hunyuan3d_image_to_textured_mesh": ModelFactory.create_model_config(
                 model_id="hunyuan3d_image_to_textured_mesh",

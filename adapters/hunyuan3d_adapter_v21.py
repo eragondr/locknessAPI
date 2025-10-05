@@ -40,7 +40,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
         self,
         model_id: Optional[str] = None,
         model_path: Optional[str] = None,
-        vram_requirement: int = 8192,  # 8GB VRAM base
+        vram_requirement: int = 192,  # 8GB VRAM base
         hunyuan3d_root: Optional[str] = None,
         feature_type: Optional[str] = None,
         supported_output_formats: Optional[List[str]] = None,
@@ -258,7 +258,7 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
         super().__init__(*args, **kwargs)
         self.load_shapegen = True
         self.load_painting = False  # Don't load painting pipeline
-        self.vram_requirement = 8192  # 8GB VRAM for shape only
+        self.vram_requirement = 192  # 8GB VRAM for shape only
         self.supported_output_formats = ["glb", "obj", "ply"]
 
     def _process_request(self, inputs: Dict[str, Any]) -> Dict[str, Any]:

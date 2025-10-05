@@ -33,7 +33,7 @@ image_to_raw_mesh:
 #    max_workers: 1
     
   hunyuan3d_image_to_raw_mesh:
-    vram_requirement: 8192  # MB
+    vram_requirement: 192  # MB
     supported_inputs: ["image"]
     supported_outputs: ["glb", "obj"]
     model_path: "thirdparty/Hunyuan3D21"
