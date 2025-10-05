@@ -195,16 +195,16 @@ echo "Installing Project Dependencies"
 echo "========================================"
 ### for this project (fastapi / uvicorn relevant etc.)  ###
 echo "[INFO] Installing main project requirements..."
-pip install -r requirements.txt
-
-if [ $? -eq 0 ]; then
-    echo "[SUCCESS] Main project requirements installed"
-else
-    echo "[ERROR] Failed to install main project requirements"
-    exit 1
-fi
-
-echo "[INFO] Installing test requirements..."
+#pip install -r requirements.txt
+#
+#if [ $? -eq 0 ]; then
+#    echo "[SUCCESS] Main project requirements installed"
+#else
+#    echo "[ERROR] Failed to install main project requirements"
+#    exit 1
+#fi
+#
+#echo "[INFO] Installing test requirements..."
 # testing 
 #pip install -r requirements-test.txt
 #if [ $? -eq 0 ]; then
