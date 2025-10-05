@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator,PrivateAttr
 
 from api.dependencies import get_scheduler
 from api.routers.file_upload import resolve_file_id
@@ -147,7 +147,8 @@ class ImageToRawMeshRequest(BaseModel):
 
     output_format: str = Field("glb", description="Output mesh format")
 
-    model_preference: str = Field("hunyuan3d_image_to_raw_mesh", description="Model name for mesh generation")
+    #model_preference: str = Field("hunyuan3d_image_to_raw_mesh",exclude=True, description="Model name for mesh generation")
+    _model_preference: str = PrivateAttr(default="hunyuan3d_image_to_raw_mesh")
 
     @field_validator("output_format")
     @classmethod
@@ -248,10 +249,10 @@ class ImageMeshPaintingRequest(BaseModel):
         1024, description="Texture resolution", ge=256, le=4096
     )
     output_format: str = Field("glb", description="Output mesh format")
-    model_preference: str = Field(
-        "hunyuan3d_image_mesh_painting", description="Model name for mesh generation"
-    )
-
+    # model_preference: str = Field(
+    #     "hunyuan3d_image_mesh_painting", description="Model name for mesh generation"
+    # )
+    _model_preference: str = PrivateAttr(default="hunyuan3d_image_mesh_painting")
     @field_validator("output_format")
     @classmethod
     def validate_output_format(cls, v):
@@ -407,160 +408,114 @@ async def process_file_input(
 
 
 # Text-to-mesh endpoints
-@router.post("/text-to-raw-mesh", response_model=MeshGenerationResponse)
-async def text_to_raw_mesh(
-    mesh_request: TextToRawMeshRequest,
-    scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
-):
-    """
-    Generate a 3D mesh from text description.
 
-    Args:
-        mesh_request: Text-to-mesh generation parameters
-        scheduler: Model scheduler dependency
-
-    Returns:
-        Job information for the mesh generation task
-    """
-    try:
-        # Validate model preference
-        validate_model_preference(
-            mesh_request.model_preference, "text_to_raw_mesh", scheduler
-        )
-
-        job_request = JobRequest(
-            feature="text_to_raw_mesh",
-            inputs={
-                "text_prompt": mesh_request.text_prompt,
-                "output_format": mesh_request.output_format,
-            },
-            model_preference=mesh_request.model_preference,
-            priority=1,
-            metadata={"feature_type": "text_to_raw_mesh"},
-        )
-        job_id = await scheduler.schedule_job(job_request)
-
-        return MeshGenerationResponse(
-            job_id=job_id,
-            status="queued",
-            message="Text-to-raw-mesh generation job queued successfully",
-        )
-
-    except HTTPException:
-        # Re-raise HTTP exceptions (including validation errors)
-        raise
-    except Exception as e:
-        logger.error(f"Error scheduling text-to-raw-mesh job: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
-
-
-@router.post("/text-to-textured-mesh", response_model=MeshGenerationResponse)
-async def text_to_textured_mesh(
-    mesh_request: TextToTexturedMeshRequest,
-    scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
-):
-    """
-    Generate a 3D textured mesh from text description.
-
-    Args:
-        mesh_request: Text-to-textured-mesh generation parameters
-        scheduler: Model scheduler dependency
-
-    Returns:
-        Job information for the mesh generation task
-    """
-    try:
-        # Validate model preference
-        validate_model_preference(
-            mesh_request.model_preference, "text_to_textured_mesh", scheduler
-        )
-
-        job_request = JobRequest(
-            feature="text_to_textured_mesh",
-            inputs={
-                "text_prompt": mesh_request.text_prompt,
-                "texture_prompt": mesh_request.texture_prompt,
-                "output_format": mesh_request.output_format,
-                "texture_resolution": mesh_request.texture_resolution,
-            },
-            model_preference=mesh_request.model_preference,
-            priority=1,
-            metadata={"feature_type": "text_to_textured_mesh"},
-        )
-
-        job_id = await scheduler.schedule_job(job_request)
-
-        return MeshGenerationResponse(
-            job_id=job_id,
-            status="queued",
-            message="Text-to-textured-mesh generation job queued successfully",
-        )
-
-    except HTTPException:
-        # Re-raise HTTP exceptions (including validation errors)
-        raise
-    except Exception as e:
-        logger.error(f"Error scheduling text-to-textured-mesh job: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
+# @router.post("/text-to-textured-mesh", response_model=MeshGenerationResponse)
+# async def text_to_textured_mesh(
+#     mesh_request: TextToTexturedMeshRequest,
+#     scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
+# ):
+#     """
+#     Generate a 3D textured mesh from text description.
+#
+#     Args:
+#         mesh_request: Text-to-textured-mesh generation parameters
+#         scheduler: Model scheduler dependency
+#
+#     Returns:
+#         Job information for the mesh generation task
+#     """
+#     try:
+#         # Validate model preference
+#         validate_model_preference(
+#             mesh_request.model_preference, "text_to_textured_mesh", scheduler
+#         )
+#
+#         job_request = JobRequest(
+#             feature="text_to_textured_mesh",
+#             inputs={
+#                 "text_prompt": mesh_request.text_prompt,
+#                 "texture_prompt": mesh_request.texture_prompt,
+#                 "output_format": mesh_request.output_format,
+#                 "texture_resolution": mesh_request.texture_resolution,
+#             },
+#             model_preference=mesh_request.model_preference,
+#             priority=1,
+#             metadata={"feature_type": "text_to_textured_mesh"},
+#         )
+#
+#         job_id = await scheduler.schedule_job(job_request)
+#
+#         return MeshGenerationResponse(
+#             job_id=job_id,
+#             status="queued",
+#             message="Text-to-textured-mesh generation job queued successfully",
+#         )
+#
+#     except HTTPException:
+#         # Re-raise HTTP exceptions (including validation errors)
+#         raise
+#     except Exception as e:
+#         logger.error(f"Error scheduling text-to-textured-mesh job: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
 
 
 # Text-based mesh painting endpoint (supports both file path and base64)
-@router.post("/text-mesh-painting", response_model=MeshGenerationResponse)
-async def text_mesh_painting(
-    mesh_request: TextMeshPaintingRequest,
-    scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
-):
-    """
-    Texture a 3D mesh from text description.
-
-    Args:
-        mesh_request: Text-based mesh painting parameters
-        scheduler: Model scheduler dependency
-
-    Returns:
-        Job information for the mesh painting task
-    """
-    try:
-        # Validate model preference
-        validate_model_preference(
-            mesh_request.model_preference, "text_mesh_painting", scheduler
-        )
-
-        # Process mesh input
-        mesh_file_path = await process_file_input(
-            file_path=mesh_request.mesh_path,
-            base64_data=mesh_request.mesh_base64,
-            file_id=mesh_request.mesh_file_id,
-            input_type="mesh",
-        )
-
-        job_request = JobRequest(
-            feature="text_mesh_painting",
-            inputs={
-                "text_prompt": mesh_request.text_prompt,
-                "mesh_path": mesh_file_path,
-                "output_format": mesh_request.output_format,
-                "texture_resolution": mesh_request.texture_resolution,
-            },
-            model_preference=mesh_request.model_preference,
-            priority=1,
-            metadata={"feature_type": "text_mesh_painting"},
-        )
-
-        job_id = await scheduler.schedule_job(job_request)
-
-        return MeshGenerationResponse(
-            job_id=job_id,
-            status="queued",
-            message="Text-based mesh painting job queued successfully",
-        )
-
-    except HTTPException:
-        # Re-raise HTTP exceptions (including validation errors)
-        raise
-    except Exception as e:
-        logger.error(f"Error scheduling text-mesh-painting job: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
+# @router.post("/text-mesh-painting", response_model=MeshGenerationResponse)
+# async def text_mesh_painting(
+#     mesh_request: TextMeshPaintingRequest,
+#     scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
+# ):
+#     """
+#     Texture a 3D mesh from text description.
+#
+#     Args:
+#         mesh_request: Text-based mesh painting parameters
+#         scheduler: Model scheduler dependency
+#
+#     Returns:
+#         Job information for the mesh painting task
+#     """
+#     try:
+#         # Validate model preference
+#         validate_model_preference(
+#             mesh_request.model_preference, "text_mesh_painting", scheduler
+#         )
+#
+#         # Process mesh input
+#         mesh_file_path = await process_file_input(
+#             file_path=mesh_request.mesh_path,
+#             base64_data=mesh_request.mesh_base64,
+#             file_id=mesh_request.mesh_file_id,
+#             input_type="mesh",
+#         )
+#
+#         job_request = JobRequest(
+#             feature="text_mesh_painting",
+#             inputs={
+#                 "text_prompt": mesh_request.text_prompt,
+#                 "mesh_path": mesh_file_path,
+#                 "output_format": mesh_request.output_format,
+#                 "texture_resolution": mesh_request.texture_resolution,
+#             },
+#             model_preference=mesh_request.model_preference,
+#             priority=1,
+#             metadata={"feature_type": "text_mesh_painting"},
+#         )
+#
+#         job_id = await scheduler.schedule_job(job_request)
+#
+#         return MeshGenerationResponse(
+#             job_id=job_id,
+#             status="queued",
+#             message="Text-based mesh painting job queued successfully",
+#         )
+#
+#     except HTTPException:
+#         # Re-raise HTTP exceptions (including validation errors)
+#         raise
+#     except Exception as e:
+#         logger.error(f"Error scheduling text-mesh-painting job: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
 
 
 # Image-to-mesh endpoints (supports both file path and base64)
@@ -579,7 +534,7 @@ async def image_to_raw_mesh(mesh_request: ImageToRawMeshRequest,scheduler: Multi
     try:
         # Validate model preference
         validate_model_preference(
-            mesh_request.model_preference, "image_to_raw_mesh", scheduler
+            mesh_request._model_preference, "image_to_raw_mesh", scheduler
         )
 
         # Process image input
@@ -596,7 +551,7 @@ async def image_to_raw_mesh(mesh_request: ImageToRawMeshRequest,scheduler: Multi
                 "image_path": image_file_path,
                 "output_format": mesh_request.output_format,
             },
-            model_preference=mesh_request.model_preference,
+            model_preference=mesh_request._model_preference,
             priority=1,
             metadata={"feature_type": "image_to_raw_mesh"},
         )
@@ -617,72 +572,72 @@ async def image_to_raw_mesh(mesh_request: ImageToRawMeshRequest,scheduler: Multi
         raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
 
 
-@router.post("/image-to-textured-mesh", response_model=MeshGenerationResponse)
-async def image_to_textured_mesh(
-    mesh_request: ImageToTexturedMeshRequest,
-    scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
-):
-    """
-    Generate a 3D textured mesh from image.
-
-    Args:
-        mesh_request: Image-to-textured-mesh generation parameters
-        scheduler: Model scheduler dependency
-
-    Returns:
-        Job information for the mesh generation task
-    """
-    try:
-        # Validate model preference
-        validate_model_preference(
-            mesh_request.model_preference, "image_to_textured_mesh", scheduler
-        )
-
-        # Process main image input
-        image_file_path = await process_file_input(
-            file_path=mesh_request.image_path,
-            base64_data=mesh_request.image_base64,
-            file_id=mesh_request.image_file_id,
-            input_type="image",
-        )
-
-        # Process texture image if provided
-        texture_image_path = None
-        if mesh_request.texture_image_path or mesh_request.texture_image_base64:
-            texture_image_path = await process_file_input(
-                file_path=mesh_request.texture_image_path,
-                base64_data=mesh_request.texture_image_base64,
-                file_id=mesh_request.texture_image_file_id,
-                input_type="texture_image",
-            )
-
-        job_request = JobRequest(
-            feature="image_to_textured_mesh",
-            inputs={
-                "image_path": image_file_path,
-                "texture_image_path": texture_image_path,
-                "output_format": mesh_request.output_format,
-                "texture_resolution": mesh_request.texture_resolution,
-            },
-            model_preference=mesh_request.model_preference,
-            priority=1,
-            metadata={"feature_type": "image_to_textured_mesh"},
-        )
-
-        job_id = await scheduler.schedule_job(job_request)
-
-        return MeshGenerationResponse(
-            job_id=job_id,
-            status="queued",
-            message="Image-to-textured-mesh generation job queued successfully",
-        )
-
-    except HTTPException:
-        # Re-raise HTTP exceptions (including validation errors)
-        raise
-    except Exception as e:
-        logger.error(f"Error scheduling image-to-textured-mesh job: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
+# @router.post("/image-to-textured-mesh", response_model=MeshGenerationResponse)
+# async def image_to_textured_mesh(
+#     mesh_request: ImageToTexturedMeshRequest,
+#     scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
+# ):
+#     """
+#     Generate a 3D textured mesh from image.
+#
+#     Args:
+#         mesh_request: Image-to-textured-mesh generation parameters
+#         scheduler: Model scheduler dependency
+#
+#     Returns:
+#         Job information for the mesh generation task
+#     """
+#     try:
+#         # Validate model preference
+#         validate_model_preference(
+#             mesh_request.model_preference, "image_to_textured_mesh", scheduler
+#         )
+#
+#         # Process main image input
+#         image_file_path = await process_file_input(
+#             file_path=mesh_request.image_path,
+#             base64_data=mesh_request.image_base64,
+#             file_id=mesh_request.image_file_id,
+#             input_type="image",
+#         )
+#
+#         # Process texture image if provided
+#         texture_image_path = None
+#         if mesh_request.texture_image_path or mesh_request.texture_image_base64:
+#             texture_image_path = await process_file_input(
+#                 file_path=mesh_request.texture_image_path,
+#                 base64_data=mesh_request.texture_image_base64,
+#                 file_id=mesh_request.texture_image_file_id,
+#                 input_type="texture_image",
+#             )
+#
+#         job_request = JobRequest(
+#             feature="image_to_textured_mesh",
+#             inputs={
+#                 "image_path": image_file_path,
+#                 "texture_image_path": texture_image_path,
+#                 "output_format": mesh_request.output_format,
+#                 "texture_resolution": mesh_request.texture_resolution,
+#             },
+#             model_preference=mesh_request.model_preference,
+#             priority=1,
+#             metadata={"feature_type": "image_to_textured_mesh"},
+#         )
+#
+#         job_id = await scheduler.schedule_job(job_request)
+#
+#         return MeshGenerationResponse(
+#             job_id=job_id,
+#             status="queued",
+#             message="Image-to-textured-mesh generation job queued successfully",
+#         )
+#
+#     except HTTPException:
+#         # Re-raise HTTP exceptions (including validation errors)
+#         raise
+#     except Exception as e:
+#         logger.error(f"Error scheduling image-to-textured-mesh job: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
 
 
 @router.post("/image-mesh-painting", response_model=MeshGenerationResponse)
@@ -703,7 +658,7 @@ async def image_mesh_painting(
     try:
         # Validate model preference
         validate_model_preference(
-            mesh_request.model_preference, "image_mesh_painting", scheduler
+            mesh_request._model_preference, "image_mesh_painting", scheduler
         )
 
         # Process image input
@@ -730,7 +685,7 @@ async def image_mesh_painting(
                 "output_format": mesh_request.output_format,
                 "texture_resolution": mesh_request.texture_resolution,
             },
-            model_preference=mesh_request.model_preference,
+            model_preference=mesh_request._model_preference,
             priority=1,
             metadata={"feature_type": "image_mesh_painting"},
         )
@@ -751,53 +706,53 @@ async def image_mesh_painting(
         raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
 
 
-@router.post("/part-completion", response_model=MeshGenerationResponse)
-async def part_completion(
-    mesh_request: PartCompletionRequest,
-    scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
-):
-    """
-    Complete a part of a 3D mesh.
-    """
-    try:
-        # Validate model preference
-        validate_model_preference(
-            mesh_request.model_preference, "part_completion", scheduler
-        )
-
-        # Process mesh input
-        mesh_file_path = await process_file_input(
-            file_path=mesh_request.mesh_path,
-            base64_data=mesh_request.mesh_base64,
-            file_id=mesh_request.mesh_file_id,
-            input_type="mesh",
-        )
-
-        job_request = JobRequest(
-            feature="part_completion",
-            inputs={
-                "mesh_path": mesh_file_path,
-                "output_format": mesh_request.output_format,
-            },
-            model_preference=mesh_request.model_preference,
-            priority=1,
-            metadata={"feature_type": "part_completion"},
-        )
-
-        job_id = await scheduler.schedule_job(job_request)
-
-        return MeshGenerationResponse(
-            job_id=job_id,
-            status="queued",
-            message="Part completion job queued successfully",
-        )
-
-    except HTTPException:
-        # Re-raise HTTP exceptions (including validation errors)
-        raise
-    except Exception as e:
-        logger.error(f"Error scheduling part completion job: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
+# @router.post("/part-completion", response_model=MeshGenerationResponse)
+# async def part_completion(
+#     mesh_request: PartCompletionRequest,
+#     scheduler: MultiprocessModelScheduler = Depends(get_scheduler),
+# ):
+#     """
+#     Complete a part of a 3D mesh.
+#     """
+#     try:
+#         # Validate model preference
+#         validate_model_preference(
+#             mesh_request.model_preference, "part_completion", scheduler
+#         )
+#
+#         # Process mesh input
+#         mesh_file_path = await process_file_input(
+#             file_path=mesh_request.mesh_path,
+#             base64_data=mesh_request.mesh_base64,
+#             file_id=mesh_request.mesh_file_id,
+#             input_type="mesh",
+#         )
+#
+#         job_request = JobRequest(
+#             feature="part_completion",
+#             inputs={
+#                 "mesh_path": mesh_file_path,
+#                 "output_format": mesh_request.output_format,
+#             },
+#             model_preference=mesh_request.model_preference,
+#             priority=1,
+#             metadata={"feature_type": "part_completion"},
+#         )
+#
+#         job_id = await scheduler.schedule_job(job_request)
+#
+#         return MeshGenerationResponse(
+#             job_id=job_id,
+#             status="queued",
+#             message="Part completion job queued successfully",
+#         )
+#
+#     except HTTPException:
+#         # Re-raise HTTP exceptions (including validation errors)
+#         raise
+#     except Exception as e:
+#         logger.error(f"Error scheduling part completion job: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Failed to schedule job: {str(e)}")
 
 
 # Utility endpoints
