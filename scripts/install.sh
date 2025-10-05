@@ -38,6 +38,7 @@ conda create -n locknessapi python=3.10 -y
 #fi
 
 echo "[INFO] Activating conda environment..."
+source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate locknessapi
 
 echo "[INFO] Installing PyTorch with CUDA 12.8 support..."
