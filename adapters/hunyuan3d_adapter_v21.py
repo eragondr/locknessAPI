@@ -155,8 +155,6 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                     # self.model_path / ".." / ".." / "dinov2-giant"
                     self.model_path / "dinov2-giant"
                 )
-
-
                 if "bg_remover" not in loaded_models:
                     self.bg_remover = BackgroundRemover()
                     loaded_models["bg_remover"] = self.bg_remover
