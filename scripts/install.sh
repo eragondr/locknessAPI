@@ -26,6 +26,8 @@ if [ -z "$ISMESH" ]; then
     echo "Usage: bash install.sh <cuda_version> <ismesh>"
     exit 1
 fi
+# Initialize conda
+conda init bash
 #echo "[INFO] Creating conda environment 'locknessapi' with Python 3.10..."
 conda create -n locknessapi python=3.10 -y
 #if [ $? -eq 0 ]; then
@@ -41,7 +43,7 @@ conda activate locknessapi
 echo "[INFO] Installing PyTorch with CUDA 12.8 support..."
 
 if [ "$CUDA_VER" == "121" ]; then
-    Tpip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu1
+    pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 elif [ "$CUDA_VER" == "124" ]; then
     pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
 elif [ "$CUDA_VER" == "126" ]; then
