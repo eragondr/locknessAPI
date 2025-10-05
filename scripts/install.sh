@@ -178,6 +178,13 @@ fi
 #echo "[SUCCESS] Hunyuan3D 2.0 installation completed"
 
 #cd ../..
+
+echo "Current directory after cd: $(pwd)"
+if [ "$ISMESH" == "1" ]; then
+    bash donwnloadMesh.sh
+else
+    bash donwnloadPaint.sh
+fi
 cd ..
 
 
@@ -242,14 +249,8 @@ echo "[INFO] Installing Hunyuan3D21 requirements..."
 echo "[SUCCESS] Hunyuan3D21 installation completed"
 echo "Before directory after cd: $(pwd)"
 cd ../..
-cd scipts
-echo "Current directory after cd: $(pwd)"
-if [ "$ISMESH" == "1" ]; then
-    bash donwnloadMesh.sh
-else
-    bash donwnloadPaint.sh
-fi
-cd ..
+
+
 #echo ""
 #echo "========================================"
 #echo "Installing HoloPart Dependencies"
@@ -330,15 +331,6 @@ echo "[INFO] Installing test requirements..."
 #    exit 1
 #fi
 
-echo "[INFO] Installing huggingface_hub for model downloading..."
-# for downloading models 
-pip install huggingface_hub
-if [ $? -eq 0 ]; then
-    echo "[SUCCESS] huggingface_hub installed"
-else
-    echo "[ERROR] Failed to install huggingface_hub"
-    exit 1
-fi
 
 echo ""
 echo "========================================"
