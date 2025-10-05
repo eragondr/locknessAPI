@@ -42,9 +42,9 @@ fi
 
 echo "[INFO] Download models"
 if [ "$ISMESH" == "1" ]; then
-    bash donwnloadMesh.sh
+    bash downloadMesh.sh
 else
-    bash donwnloadPaint.sh
+    bash downloadPaint.sh
 fi
 
 echo "[INFO] install Cuda"
