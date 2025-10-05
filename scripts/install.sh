@@ -10,9 +10,24 @@
 
 
 
+set -e
 
+# Usage: bash install.sh 124   or   bash install.sh 126
+CUDA_VER=$1
+ISMESH=$2
+
+if [ -z "$CUDA_VER" ]; then
+    echo "[ERROR] Please provide CUDA version (e.g. 124 or 126)"
+    echo "Usage: bash install.sh <cuda_version>"
+    exit 1
+fi
+if [ -z "$ISMESH" ]; then
+    echo "[ERROR] Missing ismesh argument (1 or 0)"
+    echo "Usage: bash install.sh <cuda_version> <ismesh>"
+    exit 1
+fi
 #echo "[INFO] Creating conda environment 'locknessapi' with Python 3.10..."
-#conda create -n locknessapi python=3.10 -y
+conda create -n locknessapi python=3.10 -y
 #if [ $? -eq 0 ]; then
 #    echo "[SUCCESS] Conda environment created successfully"
 #else
@@ -25,7 +40,23 @@ conda activate locknessapi
 
 echo "[INFO] Installing PyTorch with CUDA 12.8 support..."
 
+if [ "$CUDA_VER" == "121" ]; then
+    Tpip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu1
+elif [ "$CUDA_VER" == "124" ]; then
+    pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+elif [ "$CUDA_VER" == "126" ]; then
+    pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
+elif [ "$CUDA_VER" == "128" ]; then
+    pip3 install torch torchvision
+elif [ "$CUDA_VER" == "13" ]; then
+    pip3 install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu130
 
+
+else
+    echo "[ERROR] Unsupported CUDA version: $CUDA_VER"
+    echo "Supported values: 124, 126"
+    exit 1
+fi
 
 
 ## install pytorch for specific cuda versions
@@ -206,7 +237,13 @@ echo "[INFO] Installing Hunyuan3D21 requirements..."
 
 ### installation for Hunyuan3D21 end ###
 echo "[SUCCESS] Hunyuan3D21 installation completed"
-
+cd scipts
+if [ "$ISMESH" == "1" ]; then
+    bash donwnloadMesh.sh
+else
+    bash donwnloadPaint.sh
+fi
+cd ..
 #echo ""
 #echo "========================================"
 #echo "Installing HoloPart Dependencies"
