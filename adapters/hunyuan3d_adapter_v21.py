@@ -118,20 +118,12 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 self.pipeline_shapegen = (
                     Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(str(self.model_path))
                 )
-                self.pipeline_shapegen.to("cpu")
-                self.core_pipe_mesh = offload.extract_models("pipe", self.pipeline_shapegen)
-                try:
-                    offload.profile(self.core_pipe_mesh, profile_type.HighRAM_LowVRAM,verboseLevel=2)
-                    logger.info("[mmgp] HighRAM_LowVRAM profile enabled for texture pipeline_shapegen")
-                except Exception as e:
-                    logger.info("[mmgp] Failed to apply off-loading profile ➜ continuing without it.\n", e)
-                self.pipeline_shapegen.to("cuda")
                 self.pipeline_shapegen.enable_flashvdm()
                 loaded_models["shapegen"] = self.pipeline_shapegen
                 # Load background remover
                 logger.info("Loading background remover...")
-                # self.bg_remover = BackgroundRemover()
-                # loaded_models["bg_remover"] = self.bg_remover
+                self.bg_remover = BackgroundRemover()
+                loaded_models["bg_remover"] = self.bg_remover
 
             # Load paint pipeline if needed
             if self.load_painting:
