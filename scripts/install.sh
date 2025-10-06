@@ -43,8 +43,10 @@ fi
 echo "[INFO] Download models"
 if [ "$ISMESH" == "1" ]; then
     bash downloadMesh.sh
-else
+elif [ "$ISMESH" == "0" ]
     bash downloadPaint.sh
+else
+    echo "no download"
 fi
 
 echo "[INFO] install Cuda"
