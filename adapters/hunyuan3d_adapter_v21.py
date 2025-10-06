@@ -516,6 +516,9 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
         Returns:
             Dictionary with painting results
         """
+        import datetime
+
+        start = datetime.datetime.now()
         try:
             if self.bg_remover is None:
                 raise ValueError("Background remover is not loaded")
@@ -607,7 +610,8 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             #     },
             # }
 
-            logger.info(f"Hunyuan3D 2.1 mesh painting completed: {output_path}")
+            end = datetime.datetime.now()
+            logger.info(f"Hunyuan3D 2.1 mesh painting completed: {end-start}")
             return response
 
         except Exception as e:
