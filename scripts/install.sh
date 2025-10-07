@@ -95,10 +95,10 @@ pip install pydantic_settings
 pip install sqlalchemy
 pip install mmgp
 sudo apt install libegl-mesa0
-pip install pybind11
+pip install kaolin
+#pip install pybind11
 
-apt update && apt install -y libsm6 libxext6
-apt-get install -y libxrender-dev
+
 echo "[INFO] Changing directory to hy3dpaint/custom_rasterizer..."
 echo "Current directory: $(pwd)"
 cd hy3dpaint/custom_rasterizer
@@ -236,7 +236,7 @@ python -c "import open3d; import pymeshlab" && echo "Open3D and pymeshlab instal
 
 # install other runtime dependencies
 sudo apt update
-sudo apt install libsm6 libegl1 libegl1-mesa libgl1-mesa-dev -y # for rendering 
-
-
+sudo apt install libsm6 libegl1 libegl1-mesa libgl1-mesa-dev -y # for rendering
+apt update && apt install -y libsm6 libxext6
+apt-get install -y libxrender-dev
 
