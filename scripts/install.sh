@@ -43,7 +43,7 @@ fi
 echo "[INFO] Download models"
 if [ "$ISMESH" == "1" ]; then
     bash downloadMesh.sh
-elif [ "$ISMESH" == "0" ]
+elif [ "$ISMESH" == "0" ]; then
     bash downloadPaint.sh
 else
     echo "no download"
