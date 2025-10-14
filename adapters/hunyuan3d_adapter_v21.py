@@ -314,11 +314,12 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
 
             response = {
                     "output_mesh_path": str(output_path),
+                    "mesh_url": str(mesh_path),
                     "success": True,
-                    "generation_info": {
-                        "file_url": str(mesh_path),
-                        "has_texture": False,
-                    },
+                    # "generation_info": {
+                    #     "file_url": str(mesh_path),
+                    #     "has_texture": False,
+                    # },
                 }
             shutil.rmtree(output_path)
             # Load final mesh for statistics
@@ -582,16 +583,22 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
 
             response = {
                         "output_mesh_path": self.get_parrent_folder(str(output_path)),
+                        "input_mesh": str(mesh_path),
+                        "input_image": str(image_path),
+                        "output_format": output_format,
+                        "max_num_view": max_num_view,
+                        "resolution": resolution,
+                        "mesh_url": str(output_path),
                         "success": True,
-                        "painting_info": {
-                            "model": self.model_id,
-                            "input_mesh": str(mesh_path),
-                            "input_image": str(image_path),
-                            "output_format": output_format,
-                            "max_num_view": max_num_view,
-                            "resolution": resolution,
-                            "file_url": str(output_path),
-                            }
+                        # "painting_info": {
+                        #     "model": self.model_id,
+                        #     "input_mesh": str(mesh_path),
+                        #     "input_image": str(image_path),
+                        #     "output_format": output_format,
+                        #     "max_num_view": max_num_view,
+                        #     "resolution": resolution,
+                        #     "file_url": str(output_path),
+                        #     }
                         },
             shutil.rmtree(self.get_parrent_folder(str(output_path)))
             # Create response
