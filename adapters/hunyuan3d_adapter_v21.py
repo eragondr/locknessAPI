@@ -316,7 +316,7 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
                     "output_mesh_path": str(output_path),
                     "success": True,
                     "generation_info": {
-                        "file_url": str(output_path),
+                        "file_url": str(mesh_path),
                         "has_texture": False,
                     },
                 }

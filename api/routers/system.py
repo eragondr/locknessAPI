@@ -685,23 +685,23 @@ async def get_job_status(job_id: str, request: Request):
                 }
 
             # Convert thumbnail path to URL
-            thumbnail_path = result.get("thumbnail_path")
-            if thumbnail_path and os.path.exists(thumbnail_path):
-                # Create URL for thumbnail
-                thumbnail_url = (
-                    f"{request.base_url}api/v1/system/jobs/{job_id}/thumbnail"
-                )
-                result["thumbnail_url"] = thumbnail_url
-
-                # Add thumbnail file info
-                thumb_stats = os.stat(thumbnail_path)
-                result["thumbnail_file_info"] = {
-                    "filename": os.path.basename(thumbnail_path),
-                    "file_size_bytes": thumb_stats.st_size,
-                    "file_size_mb": round(thumb_stats.st_size / (1024 * 1024), 2),
-                    "content_type": get_content_type_for_file(thumbnail_path),
-                    "file_extension": Path(thumbnail_path).suffix,
-                }
+            # thumbnail_path = result.get("thumbnail_path")
+            # if thumbnail_path and os.path.exists(thumbnail_path):
+            #     # Create URL for thumbnail
+            #     thumbnail_url = (
+            #         f"{request.base_url}api/v1/system/jobs/{job_id}/thumbnail"
+            #     )
+            #     result["thumbnail_url"] = thumbnail_url
+            #
+            #     # Add thumbnail file info
+            #     thumb_stats = os.stat(thumbnail_path)
+            #     result["thumbnail_file_info"] = {
+            #         "filename": os.path.basename(thumbnail_path),
+            #         "file_size_bytes": thumb_stats.st_size,
+            #         "file_size_mb": round(thumb_stats.st_size / (1024 * 1024), 2),
+            #         "content_type": get_content_type_for_file(thumbnail_path),
+            #         "file_extension": Path(thumbnail_path).suffix,
+            #     }
 
         return job_status
     except HTTPException:
