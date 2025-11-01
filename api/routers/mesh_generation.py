@@ -248,6 +248,9 @@ class ImageMeshPaintingRequest(BaseModel):
     texture_resolution: int = Field(
         1024, description="Texture resolution", ge=256, le=4096
     )
+    job_id: Optional[str] = Field(
+        None, description="job id from mesh generation"
+    )
     output_format: str = Field("glb", description="Output mesh format")
     # model_preference: str = Field(
     #     "hunyuan3d_image_mesh_painting", description="Model name for mesh generation"
@@ -688,8 +691,10 @@ async def image_mesh_painting(
             model_preference=mesh_request._model_preference,
             priority=1,
             metadata={"feature_type": "image_mesh_painting"},
+            job_id= mesh_request.job_id,
         )
-
+        print("+++++++++++++++++++++++++++++++++++++++++++++=")
+        print(job_request.job_id)
         job_id = await scheduler.schedule_job(job_request)
 
         return MeshGenerationResponse(

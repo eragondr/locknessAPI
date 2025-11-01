@@ -32,8 +32,9 @@ class JobRequest:
         priority: int = 1,
         timeout_seconds: int = 3600,
         metadata: Optional[Dict[str, Any]] = None,
+        job_id: Optional[str] = None,
     ):
-        self.job_id = str(uuid.uuid4())
+        self.job_id = job_id or f"{datetime.utcnow().strftime('%Y%m%dT%H%M%S')}_{uuid.uuid4()}"
         self.feature = feature
         self.inputs = inputs
         self.model_preference = model_preference
