@@ -160,10 +160,7 @@ class Hunyuan3DV21ImageToMeshAdapterCommon(ImageToMeshModel):
                 if "bg_remover" not in loaded_models:
                     self.bg_remover = BackgroundRemover()
                     loaded_models["bg_remover"] = self.bg_remover
-
-                logger.info("2=====================")
                 self.paint_pipeline = Hunyuan3DPaintPipeline(conf)
-                logger.info("3=====================")
                 try:
                     self.core_pipe = self.paint_pipeline .models["multiview_model"].pipeline
                     offload.profile(self.core_pipe, profile_type.HighRAM_LowVRAM)
@@ -286,8 +283,9 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
 
             # Load and preprocess image
             image = Image.open(image_path).convert("RGBA")
-            if image.mode == "RGB":
+            if image.mode == "RGBA":
                 image = self.bg_remover(image)
+                image.save(image_path)
 
             # Shape generation only
             logger.info("Generating 3D shape...")
