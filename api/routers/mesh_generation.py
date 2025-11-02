@@ -149,7 +149,9 @@ class ImageToRawMeshRequest(BaseModel):
 
     #model_preference: str = Field("hunyuan3d_image_to_raw_mesh",exclude=True, description="Model name for mesh generation")
     _model_preference: str = PrivateAttr(default="hunyuan3d_image_to_raw_mesh")
-
+    job_id: Optional[str] = Field(
+        None, description="job id for mesh generation"
+    )
     @field_validator("output_format")
     @classmethod
     def validate_output_format(cls, v):
@@ -557,6 +559,7 @@ async def image_to_raw_mesh(mesh_request: ImageToRawMeshRequest,scheduler: Multi
             model_preference=mesh_request._model_preference,
             priority=1,
             metadata={"feature_type": "image_to_raw_mesh"},
+            job_id=mesh_request.job_id,
         )
 
         job_id = await scheduler.schedule_job(job_request)
