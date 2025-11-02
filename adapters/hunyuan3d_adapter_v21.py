@@ -286,7 +286,7 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
             if image.mode == "RGBA":
                 image = self.bg_remover(image)
                 if image_path.suffix.lower() in ('.jpg', '.jpeg'):
-                     image_path.with_suffix('.png')
+                    image_path = image_path.with_suffix('.png')
                 image.save(image_path)
 
             # Shape generation only
