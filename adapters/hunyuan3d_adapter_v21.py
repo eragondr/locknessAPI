@@ -287,6 +287,7 @@ class Hunyuan3DV21ImageToRawMeshAdapter(Hunyuan3DV21ImageToMeshAdapterCommon):
                 image = self.bg_remover(image)
                 if image_path.suffix.lower() in ('.jpg', '.jpeg'):
                     image_path = image_path.with_suffix('.png')
+                    inputs["image_path"]=str(image_path)
                 image.save(image_path)
 
             # Shape generation only
@@ -502,6 +503,100 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
         self.vram_requirement = 2288  # 12GB VRAM for painting only
         self.supported_output_formats = ["glb", "obj"]
 
+    # def _process_request(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    #     """
+    #     Process mesh texture painting using Hunyuan3D 2.1.
+    #
+    #     Args:
+    #         inputs: Dictionary containing:
+    #             - mesh_path: Path to input mesh (required)
+    #             - image_path: Path to reference image (required)
+    #             - output_format: Output format (default: "glb")
+    #             - max_num_view: Number of views for texture generation (default: 6)
+    #             - resolution: Texture resolution (default: 512)
+    #
+    #     Returns:
+    #         Dictionary with painting results
+    #     """
+    #     try:
+    #         if self.bg_remover is None:
+    #             raise ValueError("Background remover is not loaded")
+    #         if self.paint_pipeline is None:
+    #             raise ValueError("Texture painting pipeline is not loaded")
+    #
+    #         # Validate inputs
+    #         if "mesh_path" not in inputs:
+    #             raise ValueError("mesh_path is required for mesh painting")
+    #         if "image_path" not in inputs:
+    #             raise ValueError("image_path is required for mesh painting")
+    #
+    #         mesh_path = Path(inputs["mesh_path"])
+    #         image_path = Path(inputs["image_path"])
+    #
+    #         if not mesh_path.exists():
+    #             raise FileNotFoundError(f"Input mesh file not found: {mesh_path}")
+    #         if not image_path.exists():
+    #             raise FileNotFoundError(f"Input image file not found: {image_path}")
+    #
+    #         # Extract parameters
+    #         output_format = inputs.get("output_format", "glb")
+    #         max_num_view = inputs.get("max_num_view", 6)
+    #         resolution = inputs.get("resolution", 712)
+    #
+    #         if output_format not in self.supported_output_formats:
+    #             raise ValueError(f"Unsupported output format: {output_format}")
+    #
+    #         logger.info(
+    #             f"Painting mesh with Hunyuan3D 2.1: {mesh_path} using image: {image_path}"
+    #         )
+    #
+    #         base_name = f"texture_model_{image_path.stem}"
+    #
+    #         output_path = self.path_generator.generate_mesh_path(
+    #             self.get_parrent_folder(str(image_path)), base_name, output_format
+    #         )
+    #
+    #         # Run texture painting
+    #         logger.info("Generating texture...")
+    #         final_mesh_path = self.paint_pipeline(
+    #             str(mesh_path), str(image_path), str(output_path)
+    #         )
+    #         # Ensure the output is at our desired path
+    #         if final_mesh_path != str(output_path):
+    #
+    #
+    #             shutil.move(final_mesh_path, output_path)
+    #
+    #
+    #         # Load final mesh for statistics
+    #         # final_mesh = self.mesh_processor.load_mesh(output_path)
+    #         # mesh_stats = self.mesh_processor.get_mesh_stats(final_mesh)
+    #         logger.info(f"Texture generation complete: {self.get_parrent_folder(str(output_path))}")
+    #         if R2Client._instance is None:
+    #             client = R2Client()
+    #             client.upload_folder_to_r2(self.get_parrent_folder(str(output_path)), r2_base_key=self.get_parrent_folder(str(output_path)), skip_file=image_path.stem)
+    #         else:
+    #             R2Client._instance.upload_folder_to_r2(self.get_parrent_folder(str(output_path)), r2_base_key=self.get_parrent_folder(str(output_path)),
+    #                                                    skip_file=image_path.stem)
+    #
+    #         response = {
+    #                     "output_mesh_path": self.get_parrent_folder(str(output_path)),
+    #                     "input_mesh": str(mesh_path),
+    #                     "input_image": str(image_path),
+    #                     "output_format": output_format,
+    #                     "max_num_view": max_num_view,
+    #                     "resolution": resolution,
+    #                     "mesh_url": str(output_path),
+    #                     "success": True,
+    #
+    #                     },
+    #         shutil.rmtree(self.get_parrent_folder(str(output_path)))
+    #         return response
+    #
+    #     except Exception as e:
+    #         logger.error(f"Hunyuan3D 2.1 mesh painting failed: {str(e)}")
+    #         raise Exception(f"Hunyuan3D 2.1 mesh painting failed: {str(e)}")
+
     def _process_request(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Process mesh texture painting using Hunyuan3D 2.1.
@@ -517,9 +612,6 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
         Returns:
             Dictionary with painting results
         """
-        import datetime
-
-        start = datetime.datetime.now()
         try:
             if self.bg_remover is None:
                 raise ValueError("Background remover is not loaded")
@@ -543,7 +635,7 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             # Extract parameters
             output_format = inputs.get("output_format", "glb")
             max_num_view = inputs.get("max_num_view", 6)
-            resolution = inputs.get("resolution", 712)
+            resolution = inputs.get("resolution", 512)  # CHANGED: Default to 512 to reduce memory usage; was 712
 
             if output_format not in self.supported_output_formats:
                 raise ValueError(f"Unsupported output format: {output_format}")
@@ -558,17 +650,38 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
                 self.get_parrent_folder(str(image_path)), base_name, output_format
             )
 
-            # Run texture painting
+            # ADDED: Log initial GPU memory usage for debugging
+            if torch.cuda.is_available():
+                logger.info(f"Initial GPU memory allocated: {torch.cuda.memory_allocated() / 1024 ** 2:.2f} MB")
+                logger.info(f"Initial GPU memory reserved: {torch.cuda.memory_reserved() / 1024 ** 2:.2f} MB")
+
+            # Run texture painting with memory optimizations
             logger.info("Generating texture...")
-            final_mesh_path = self.paint_pipeline(
-                str(mesh_path), str(image_path), str(output_path)
-            )
+            try:
+                with torch.no_grad():  # ADDED: Disable gradients to save memory (if pipeline involves forward passes)
+                    final_mesh_path = self.paint_pipeline(
+                        str(mesh_path), str(image_path), str(output_path)
+                    )
+            except RuntimeError as e:  # ADDED: Catch OOM specifically
+                if "out of memory" in str(e):
+                    logger.error("CUDA out of memory during pipeline execution. Clearing cache and retrying once.")
+                    torch.cuda.empty_cache()
+                    with torch.no_grad():
+                        final_mesh_path = self.paint_pipeline(
+                            str(mesh_path), str(image_path), str(output_path)
+                        )
+                else:
+                    raise
+
+            # ADDED: Clear GPU cache after pipeline to prevent accumulation across runs
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                logger.info(f"Post-pipeline GPU memory allocated: {torch.cuda.memory_allocated() / 1024 ** 2:.2f} MB")
+                logger.info(f"Post-pipeline GPU memory reserved: {torch.cuda.memory_reserved() / 1024 ** 2:.2f} MB")
+
             # Ensure the output is at our desired path
             if final_mesh_path != str(output_path):
-
-
                 shutil.move(final_mesh_path, output_path)
-
 
             # Load final mesh for statistics
             # final_mesh = self.mesh_processor.load_mesh(output_path)
@@ -576,55 +689,31 @@ class Hunyuan3DV21ImageMeshPaintingAdapter(Hunyuan3DV21ImageToMeshAdapterCommon)
             logger.info(f"Texture generation complete: {self.get_parrent_folder(str(output_path))}")
             if R2Client._instance is None:
                 client = R2Client()
-                client.upload_folder_to_r2(self.get_parrent_folder(str(output_path)), r2_base_key=self.get_parrent_folder(str(output_path)), skip_file=image_path.stem)
+                client.upload_folder_to_r2(self.get_parrent_folder(str(output_path)),
+                                           r2_base_key=self.get_parrent_folder(str(output_path)),
+                                           skip_file=image_path.stem)
             else:
-                R2Client._instance.upload_folder_to_r2(self.get_parrent_folder(str(output_path)), r2_base_key=self.get_parrent_folder(str(output_path)),
+                R2Client._instance.upload_folder_to_r2(self.get_parrent_folder(str(output_path)),
+                                                       r2_base_key=self.get_parrent_folder(str(output_path)),
                                                        skip_file=image_path.stem)
 
             response = {
-                        "output_mesh_path": self.get_parrent_folder(str(output_path)),
-                        "input_mesh": str(mesh_path),
-                        "input_image": str(image_path),
-                        "output_format": output_format,
-                        "max_num_view": max_num_view,
-                        "resolution": resolution,
-                        "mesh_url": str(output_path),
-                        "success": True,
-                        # "painting_info": {
-                        #     "model": self.model_id,
-                        #     "input_mesh": str(mesh_path),
-                        #     "input_image": str(image_path),
-                        #     "output_format": output_format,
-                        #     "max_num_view": max_num_view,
-                        #     "resolution": resolution,
-                        #     "file_url": str(output_path),
-                        #     }
-                        },
+                "output_mesh_path": self.get_parrent_folder(str(output_path)),
+                "input_mesh": str(mesh_path),
+                "input_image": str(image_path),
+                "output_format": output_format,
+                "max_num_view": max_num_view,
+                "resolution": resolution,
+                "mesh_url": str(output_path),
+                "success": True,
+            }
             shutil.rmtree(self.get_parrent_folder(str(output_path)))
-            # Create response
-            # response = {
-            #     "output_mesh_path": str(output_path),
-            #     "success": True,
-            #     "painting_info": {
-            #         "model": self.model_id,
-            #         "input_mesh": str(mesh_path),
-            #         "input_image": str(image_path),
-            #         "output_format": output_format,
-            #         "vertex_count": mesh_stats["vertex_count"],
-            #         "face_count": mesh_stats["face_count"],
-            #         "max_num_view": max_num_view,
-            #         "resolution": resolution,
-            #     },
-            # }
-
-            end = datetime.datetime.now()
-            logger.info(f"Hunyuan3D 2.1 mesh painting completed: {end-start}")
             return response
 
-        except Exception as e:
-            logger.error(f"Hunyuan3D 2.1 mesh painting failed: {str(e)}")
-            raise Exception(f"Hunyuan3D 2.1 mesh painting failed: {str(e)}")
-
+        finally:
+            # ADDED: Ensure cache clear at the end of every run, even on errors
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
     def get_supported_formats(self) -> Dict[str, List[str]]:
         """Return supported input/output formats for Hunyuan3D 2.1 painting."""
         return {"input": ["glb", "obj", "ply"], "output": ["glb", "obj"]}
