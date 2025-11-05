@@ -1,6 +1,6 @@
 import boto3
 import os
-
+from datetime import datetime, timedelta, timezone
 class R2Client:
     _instance = None
     
@@ -33,8 +33,6 @@ class R2Client:
             print(f"Creating directories for path: {local_file_path}")
             os.makedirs(os.path.dirname(local_file_path))
         self.s3_client.download_file(bucket_name, object_key, local_file_path)
-        
-        print(f"File downloaded successfully to {local_file_path}")
         return local_file_path
 
     def download_from_r2_with_dirs(self, object_key, local_base_dir, bucket_name='lockness'):
@@ -59,7 +57,7 @@ class R2Client:
         :param bucket_name: The name of the R2 bucket (default: 'lockness')
         """
         self.s3_client.upload_file(local_file_path, bucket_name, object_key)
-        print(f"File uploaded successfully to R2 at {object_key}")
+
 
     def upload_folder_to_r2(self, local_folder_path, r2_base_key='', bucket_name='lockness', skip_file=''):
         """
@@ -85,4 +83,35 @@ class R2Client:
 
                 # Upload to R2
                 self.s3_client.upload_file(local_file, bucket_name, object_key)
-        print(f"Done============================================")
+
+
+
+    def Removefile(self,day,bucket_name='lockness'):
+        cutoff_time = datetime.now(timezone.utc) - timedelta(days=day)
+        LOG_FILE = 'deleted_files.txt'
+        # Open log file for writing
+        with open(LOG_FILE, 'w') as log:
+            log.write("Deleted files and their prefixes:\n")
+
+            # Paginate through all objects in the bucket
+            paginator = self.s3_client.get_paginator('list_objects_v2')
+            for page in paginator.paginate(Bucket=bucket_name):
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        key = obj['Key']
+                        last_modified = obj['LastModified']
+
+                        # Check if object is older than 1 day
+                        if last_modified < cutoff_time:
+                            # Extract prefix (everything before the last '/')
+                            prefix = '/'.join(key.split('/')[:-1]) + '/' if '/' in key else ''
+                            file_name = key.split('/')[-1]
+
+                            # Log the file and prefix
+                            log.write(f"Prefix: {prefix}\nFile: {file_name}\nFull Key: {key}\n\n")
+
+                            # Delete the object
+                            self.s3_client.delete_object(Bucket=bucket_name, Key=key)
+                            print(f"Deleted: {key}")
+
+        print(f"Deletion complete. Log saved to {LOG_FILE}")
